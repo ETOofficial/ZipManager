@@ -1,0 +1,10 @@
+{
+  "main_win_size_per": {
+    "width": 0.5,
+    "height": 0.5
+  },
+  "main_win_pos_per": {
+    "x": 0.25,
+    "y": 0.25
+  }
+}
