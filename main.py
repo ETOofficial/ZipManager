@@ -1,9 +1,14 @@
 import sys
 import json
-from PyQt5.QtWidgets import QApplication, QWidget, QDesktopWidget
+from PyQt5.QtWidgets import QApplication, QWidget, QDesktopWidget, QMainWindow
 from PyQt5 import QtWidgets
 
-import demo
+from demo import *
+
+class MainWindow(QMainWindow, Ui_MainWindow):
+    def __init__(self, parent = None):
+        super(MainWindow, self).__init__(parent)
+        self.setupUi(self)
 
 if __name__ == '__main__':
     # 读取配置文件
@@ -14,8 +19,8 @@ if __name__ == '__main__':
     # 创建Qt应用程序实例
     app = QApplication(sys.argv)
 
-    # 创建一个QtWidget对象，作为主窗口
-    main_win = QtWidgets.QMainWindow()
+    # 主窗口
+    main_win = MainWindow()
 
     # 获取屏幕的分辨率
     screen = QDesktopWidget().screenGeometry()
@@ -28,9 +33,6 @@ if __name__ == '__main__':
         int(screen.width() * configs["main_win_pos_per"]["x"]),
         int(screen.height() * configs["main_win_pos_per"]["y"])
     )
-    main_win.setWindowTitle('ZipManager')
-    
-    demo.Ui_MainWindow().setupUi(main_win)
     
     main_win.show()
     
