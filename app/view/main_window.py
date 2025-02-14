@@ -2,10 +2,9 @@
 
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
-from qfluentwidgets import FluentIcon as FIF
-from qfluentwidgets import FluentWindow
+from qfluentwidgets import FluentIcon, FluentWindow
 
-from .homeInterface import HomeInterface
+from .fileInterface import FileInterface
 
 
 class MainWindow(FluentWindow):
@@ -14,14 +13,14 @@ class MainWindow(FluentWindow):
         super().__init__()
 
         # create sub interface
-        self.homeInterface = HomeInterface(self)
+        self.fileInterface = FileInterface(self)
 
 
         self.initNavigation()
         self.initWindow()
 
     def initNavigation(self):
-        self.addSubInterface(self.homeInterface, FIF.HOME, 'Home')
+        self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, '文件')
 
 
     def initWindow(self):
