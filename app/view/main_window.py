@@ -1,5 +1,5 @@
 from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication
+from PyQt5.QtWidgets import QApplication, QTableWidgetItem
 from qfluentwidgets import FluentIcon, FluentWindow
 
 from .fileInterface import FileInterface
@@ -50,7 +50,14 @@ class MainWindow(FluentWindow):
         paths = paths.split('\n')
         if paths[-1] == '':
             del (paths[-1])
+        for i in range(len(paths)):
+            paths[i] = paths[i][8:]
         print(paths)
+        self.fileInterface.pathlib.extend(paths)
+        self.fileInterface.row += len(paths)
+        self.fileInterface.tableView.setRowCount(self.fileInterface.row)
+        for i, paths in enumerate(self.fileInterface.pathlib):
+            self.fileInterface.tableView.setItem(i, 0, QTableWidgetItem(paths))
 
     def dragMoveEvent(self, event):
         """鼠标移动事件"""
