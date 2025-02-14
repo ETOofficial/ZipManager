@@ -33,12 +33,13 @@ class FileInterface(ScrollArea):
         self.tableView.setWordWrap(False)
         # 设置行数和列数
         self.row = len(self.pathlib)
-        self.column = 1
+        self.columnTitles = ["路径"]
+        self.column = len(self.columnTitles)
         self.tableView.setRowCount(self.row)
         self.tableView.setColumnCount(self.column)
         for i, path in enumerate(self.pathlib):
             self.tableView.setItem(i, 0, QTableWidgetItem(path))
-        self.tableView.setHorizontalHeaderLabels(["路径"])
+        self.tableView.setHorizontalHeaderLabels(self.columnTitles)
 
     
         # 将元素加入布局

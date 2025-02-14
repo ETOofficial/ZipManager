@@ -54,7 +54,15 @@ class MainWindow(FluentWindow):
             paths[i] = paths[i][8:]
         print(paths)
         self.fileInterface.pathlib.extend(paths)
-        self.fileInterface.row += len(paths)
+        
+        # 检查文件是否嵌套
+        for i, path_i in enumerate(self.fileInterface.pathlib[:-1]):
+            for j, path_j in enumerate(self.fileInterface.pathlib[i+1:]):
+                if len(path_i) >= len(path_j):
+                    if path_i[:len(path_j)] == path_j:
+                        del(self.fileInterface.pathlib[i])
+        
+        self.fileInterface.row = len(self.fileInterface.pathlib)
         self.fileInterface.tableView.setRowCount(self.fileInterface.row)
         for i, paths in enumerate(self.fileInterface.pathlib):
             self.fileInterface.tableView.setItem(i, 0, QTableWidgetItem(paths))
