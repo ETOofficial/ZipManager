@@ -1,5 +1,3 @@
-# coding:utf-8
-
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon, FluentWindow
