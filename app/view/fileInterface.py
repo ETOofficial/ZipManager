@@ -1,7 +1,8 @@
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QHBoxLayout, QFileDialog
-from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action
+from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, FolderListDialog
 
+from .newZippingTask import NewZippingTask
 
 class FileInterface(ScrollArea):
     """ Home interface """
@@ -22,7 +23,7 @@ class FileInterface(ScrollArea):
         # self.commandBar.setButtonTight(True)
         # setFont(self.commandBar, 14)
 
-        self.addButton(FluentIcon.ADD, '新建', self.file_cho)
+        self.addButton(FluentIcon.ADD, '新建', self.nzt_Dialog)
 
     def addButton(self, icon, text, do=None):
         action = Action(icon, text, self)
@@ -34,3 +35,8 @@ class FileInterface(ScrollArea):
     def file_cho(self):
         folder = QFileDialog.getExistingDirectory(
             self, self.tr("Choose folder"), "./")
+
+    def nzt_Dialog(self):
+        w = NewZippingTask(self)
+        if w.exec():
+            print(111)
