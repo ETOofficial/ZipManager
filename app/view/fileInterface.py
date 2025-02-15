@@ -1,8 +1,10 @@
 import os
 
 from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAction, QAbstractItemView
-from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, MenuAnimationType
+from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, MenuAnimationType, \
+    TransparentDropDownPushButton, setFont
 
 from ..utils.fileinfo import getinfo, remove_nested
 
@@ -69,13 +71,18 @@ class CustomTableWidget(TableWidget):
         elif event.button() == Qt.LeftButton:
             # 处理左键点击事件
             index = self.indexAt(event.pos())
+            row = index.row()
+            column = index.column()
             if index.isValid():
-                row = index.row()
-                column = index.column()
-                print(f"Left-click on Row {row}, Column {column}")
-                # 你可以在这里添加更多的逻辑
-                path = self.parent().pathlib[row]
-                print(f"Selected path: {path}")
+                # 检查 Ctrl 键是否被按下
+                if event.modifiers() & Qt.ControlModifier:
+                    print(f"Ctrl + Left-click on Row {row}, Column {column}")
+                    
+                else:
+                    print(f"Left-click on Row {row}, Column {column}")
+                    # 你可以在这里添加更多的逻辑
+                    path = self.parent().pathlib[row]
+                    print(f"Selected path: {path}")
         super().mousePressEvent(event)
 
     def mouseDoubleClickEvent(self, event):
@@ -83,15 +90,16 @@ class CustomTableWidget(TableWidget):
         index = self.indexAt(event.pos())
         row = index.row()
         column = index.column()
-        # 检查 Ctrl 键是否被按下
+        path = self.parent().pathlib[row]
         if index.isValid():
+            # 检查 Ctrl 键是否被按下
             if event.modifiers() & Qt.ControlModifier:
-                print("Ctrl + Double-click detected")
-                # 你可以在这里添加更多的逻辑
+                print(f"Ctrl + Double-click on Row {row}, Column {column}")
+                # self.parent().add_select_path(path)
+                # 弹出确认窗口：打开所有选中的文件
             else:
                 print(f"Double-click on Row {row}, Column {column}")
                 # 你可以在这里添加更多的逻辑
-                path = self.parent().pathlib[row]
                 print(f"Double-clicked path: {path}")
                 if os.path.isfile(path):
                     os.startfile(path)
@@ -100,6 +108,24 @@ class CustomTableWidget(TableWidget):
                 else:
                     print("Invalidpath")
         super().mouseDoubleClickEvent(event)
+        
+    def get_select_rows(self):
+        rows = []
+        selected_indexes = self.selectedIndexes()
+        for index in selected_indexes:
+            row = index.row()
+            column = index.column()
+            if column == 1:
+                rows.append(row)
+        return tuple(rows)
+
+    # def counter_selection(self):
+    #     """反选"""
+    #     select_rows = self.get_select_rows()
+    #     self.clearSelection()
+    #     for row in range(self.rowCount()):
+    #         if row not in select_rows:
+    #             self.setRangeSelected(, True)
 
 class FileInterface(ScrollArea):
     def __init__(self, parent=None):
@@ -107,34 +133,25 @@ class FileInterface(ScrollArea):
         self.object_name = "FileInterface"
         self.setObjectName(self.object_name)
         
-        self.pathlib = []
+        self.pathlib = [] # 待处理的路径列表
 
         # 创建布局实例
         self.vBoxLayout = QVBoxLayout(self)
         self.vBoxLayout2 = QVBoxLayout(self)
         self.commandBar = CommandBar(self)
-
+        self.dropDownButton = self.createDropDownButton()
 
         # change button style
         self.commandBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
-
-        self.addButton(FluentIcon.PLAY, '批量压缩', )
-        self.addButton(FluentIcon.PLAY, '批量解压', )
-        self.addButton(FluentIcon.ADD, '添加文件', self.select_file)
-        self.addButton(FluentIcon.ADD, '添加文件夹', self.select_folder)
 
         # 创建文件表格
         self.tableView = CustomTableWidget(self)
         # 设置 tableView 为不可编辑
         self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        # # 连接 cellClicked 信号到自定义槽函数
-        # self.tableView.cellClicked.connect(self.on_cell_clicked)
-        # self.tableView.cellDoubleClicked.connect(self.on_cell_double_clicked)
         # enable border
         self.tableView.setBorderVisible(True)
         self.tableView.setBorderRadius(8)
         self.tableView.setWordWrap(False)
-        
         # 设置行数和列数
         self.len_row = len(self.pathlib)
         self.columnTitles = ["路径", "文件（夹）名", "大小", "修改日期", "创建日期", "访问日期"]
@@ -143,6 +160,20 @@ class FileInterface(ScrollArea):
         self.tableView_update()
         self.tableView.setHorizontalHeaderLabels(self.columnTitles)
 
+        # 添加按钮
+        self.addButton(FluentIcon.PLAY, '压缩全部', )
+        self.addButton(FluentIcon.PLAY, '解压全部', )
+        self.commandBar.addSeparator()
+        self.addButton(FluentIcon.ADD, '添加文件', self.select_file)
+        self.addButton(FluentIcon.ADD, '添加文件夹', self.select_folder)
+        self.commandBar.addAction(Action(FluentIcon.CHECKBOX, '全选', triggered=self.select_all, checkable=True))
+        # self.addButton(FluentIcon.CHECKBOX, "全选", self.select_all, True)
+        # self.addButton(FluentIcon.CHECKBOX, "反选", self.tableView.counter_selection)
+
+        # add custom widget
+        self.commandBar.addWidget(self.dropDownButton)
+
+        
     
         # 将元素加入布局
         self.vBoxLayout.addWidget(self.commandBar)
@@ -151,11 +182,33 @@ class FileInterface(ScrollArea):
         
         print(f"{self.object_name} has been inited")
 
-    def addButton(self, icon, text, do=None):
+    def select_all(self, isChecked):
+        if isChecked:
+            self.tableView.selectAll()
+        else:
+            self.tableView.clearSelection()
+
+    def createDropDownButton(self):
+        button = TransparentDropDownPushButton('其它选项', self, FluentIcon.MORE)
+        button.setFixedHeight(34)
+        setFont(button, 12)
+
+        menu = RoundMenu(parent=self)
+        menu.addActions([
+            Action(FluentIcon.COPY, 'Copy'),
+            Action(FluentIcon.CUT, 'Cut'),
+            Action(FluentIcon.PASTE, 'Paste'),
+            Action(FluentIcon.CANCEL, 'Cancel'),
+            Action('Select all'),
+        ])
+        button.setMenu(menu)
+        return button       
+
+    def addButton(self, icon, text, triggered=None):
+        if triggered is None:
+            triggered = lambda: print(f"\"{text}\" has been clicked")
         action = Action(icon, text, self)
-        if do is None:
-            do = lambda: print(f"\"{text}\" has been clicked")
-        action.triggered.connect(do)
+        action.triggered.connect(triggered)
         self.commandBar.addAction(action)
 
     def tableView_update(self):
@@ -163,7 +216,7 @@ class FileInterface(ScrollArea):
         self.tableView.setRowCount(self.len_row)
         for i, path in enumerate(self.pathlib):
             FileInfo = getinfo(path)
-            print(FileInfo)
+            # print(FileInfo)
             self.tableView.setItem(i, 0, QTableWidgetItem(path))
             self.tableView.setItem(i, 1, QTableWidgetItem(FileInfo["name"]))
             self.tableView.setItem(i, 2, QTableWidgetItem(FileInfo["size"]))
@@ -181,7 +234,6 @@ class FileInterface(ScrollArea):
             self.pathlib.append(fileName)
             self.pathlib = remove_nested(self.pathlib)
             self.tableView_update()
-        
             
     def select_folder(self):
         options = QFileDialog.Options()
@@ -192,26 +244,6 @@ class FileInterface(ScrollArea):
             self.pathlib.append(folderName)
             self.pathlib = remove_nested(self.pathlib)
             self.tableView_update()
-
-    # def on_cell_clicked(self, row, column):
-    #     # 处理行点击事件
-    #     print(f"Row {row}, Column {column} clicked")
-    #     # 你可以在这里添加更多的逻辑
-    #     path = self.pathlib[row]
-    #     print(f"Selected path: {path}")
-    #     
-    # def on_cell_double_clicked(self, row, column):
-    #     # 处理双击事件
-    #     print(f"Row {row}, Column {column} double clicked")
-    #     # 你可以在这里添加更多的逻辑
-    #     path = self.pathlib[row]
-    #     print(f"Selected path: {path}")
-    #     if os.path.isfile(path):
-    #         os.startfile(path)
-    #     elif os.path.isdir(path):
-    #         os.startfile(path)
-    #     else:
-    #         print("Invalidpath")
             
     def remove_file(self, row):
         self.pathlib.pop(row)
