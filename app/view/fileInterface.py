@@ -1,8 +1,8 @@
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget
 
-from ..utils.fileinfo import getinfo
+from ..utils.fileinfo import getinfo, remove_nested
 
 
 class FileInterface(ScrollArea):
@@ -24,7 +24,8 @@ class FileInterface(ScrollArea):
 
         self.addButton(FluentIcon.PLAY, '批量压缩', )
         self.addButton(FluentIcon.PLAY, '批量解压', )
-        self.addButton(FluentIcon.ADD, '添加文件', )
+        self.addButton(FluentIcon.ADD, '添加文件', self.select_file)
+        self.addButton(FluentIcon.ADD, '添加文件夹', self.select_folder)
 
         # 创建文件表格
         self.tableView = TableWidget(self)
@@ -68,3 +69,29 @@ class FileInterface(ScrollArea):
             self.tableView.setItem(i, 4, QTableWidgetItem(FileInfo["ctime"]))
             self.tableView.setItem(i, 5, QTableWidgetItem(FileInfo["atime"]))
         print(f"{self.object_name} tableView has been update")
+        
+    def select_file(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*)", options=options)
+        if fileName:
+            print(f"选择的文件：{fileName}")
+            self.pathlib.append(fileName)
+            self.pathlib = remove_nested(self.pathlib)
+            self.tableView_update()
+        
+            
+    def select_folder(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        folderName = QFileDialog.getExistingDirectory(self, "选择文件夹", "", options=options)
+        if folderName:
+            print(f"选择的文件夹：{folderName}")
+            self.pathlib.append(folderName)
+            self.pathlib = remove_nested(self.pathlib)
+            self.tableView_update()
+            
+    def remove_file(self, row):
+        self.pathlib.pop(row)
+        self.tableView_update()
+        print(f"{self.object_name} file has been removed")

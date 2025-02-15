@@ -6,6 +6,7 @@ from qfluentwidgets import FluentIcon, FluentWindow
 
 from .fileInterface import FileInterface
 
+from ..utils.fileinfo import remove_nested
 
 class MainWindow(FluentWindow):
 
@@ -58,15 +59,7 @@ class MainWindow(FluentWindow):
         self.fileInterface.pathlib.extend(path)
         
         # 检查文件是否嵌套
-        for i, path_i in enumerate(self.fileInterface.pathlib[:-1]):
-            for j, path_j in enumerate(self.fileInterface.pathlib[i+1:]):
-                if len(path_i) >= len(path_j):
-                    if path_i[:len(path_j)] == path_j:
-                        self.fileInterface.pathlib[i] = ""
-                elif len(path_i) < len(path_j):
-                    if path_j[:len(path_i)] == path_i:
-                        self.fileInterface.pathlib[i+j+1] = ""
-        self.fileInterface.pathlib = [i for i in self.fileInterface.pathlib if i != ""]
+        self.fileInterface.pathlib = remove_nested(self.fileInterface.pathlib)
         
         self.fileInterface.tableView_update()
 
