@@ -56,12 +56,12 @@ class MainWindow(FluentWindow):
         for i in range(len(path)):
             path[i] = path[i][8:]
         print(path)
-        self.fileInterface.pathlib.extend(path)
+        self.fileInterface.tableView.pathlib.extend(path)
         
         # 检查文件是否嵌套
-        self.fileInterface.pathlib = remove_nested(self.fileInterface.pathlib)
+        self.fileInterface.tableView.pathlib = remove_nested(self.fileInterface.tableView.pathlib)
         
-        self.fileInterface.tableView_update()
+        self.fileInterface.tableView.update()
 
     
 

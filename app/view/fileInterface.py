@@ -12,6 +12,22 @@ class CustomTableWidget(TableWidget):
     def __init__(self, parent=None):
         super().__init__(parent)
 
+        self.pathlib = [] # 待处理的路径列表
+
+        # 设置 tableView 为不可编辑
+        self.setEditTriggers(QAbstractItemView.NoEditTriggers)
+        # enable border
+        self.setBorderVisible(True)
+        self.setBorderRadius(8)
+        self.setWordWrap(False)
+        # 设置行数和列数
+        self.len_row = len(self.pathlib)
+        self.columnTitles = ["路径", "文件（夹）名", "大小", "修改日期", "创建日期", "访问日期"]
+        self.len_column = len(self.columnTitles)
+        self.setColumnCount(self.len_column)
+        self.update()
+        self.setHorizontalHeaderLabels(self.columnTitles)
+
     def mousePressEvent(self, event):
         index = self.indexAt(event.pos())
         row = index.row()
@@ -32,7 +48,7 @@ class CustomTableWidget(TableWidget):
                 else:
                     print(f"Left-click on Row {row}, Column {column}")
                     # 你可以在这里添加更多的逻辑
-                    path = self.parent().pathlib[row]
+                    path = self.pathlib[row]
                     print(f"Selected path: {path}")
         super().mousePressEvent(event)
 
@@ -81,12 +97,37 @@ class CustomTableWidget(TableWidget):
         menu = RoundMenu(parent=self)
 
         menu.addActions([
-            Action(FluentIcon.PEOPLE, '管理账户和设置'),
-            Action(FluentIcon.SHOPPING_CART, '支付方式'),
-            Action(FluentIcon.CODE, '兑换代码和礼品卡'),
+            Action(FluentIcon.DELETE, '移出列表'),
+            Action(FluentIcon.FOLDER, '打开文件所在文件夹'),
+            Action(FluentIcon.PLAY, '打开文件（夹）')
         ])
 
         menu.exec(event.globalPos())
+        
+    def remove_row(self, row):
+        self.pathlib.remove(row)
+        self.update()
+        
+    def pop_row(self, row):
+        row = self.pathlib.pop(row)
+        self.update()
+        return row
+        
+    def remove_all(self):
+        self.pathlib = []
+        self.update()
+
+    def update(self):
+        self.len_row = len(self.pathlib)
+        self.setRowCount(self.len_row)
+        for i, path in enumerate(self.pathlib):
+            FileInfo = getinfo(path)
+            self.setItem(i, 0, QTableWidgetItem(path))
+            self.setItem(i, 1, QTableWidgetItem(FileInfo["name"]))
+            self.setItem(i, 2, QTableWidgetItem(FileInfo["size"]))
+            self.setItem(i, 3, QTableWidgetItem(FileInfo["mtime"]))
+            self.setItem(i, 4, QTableWidgetItem(FileInfo["ctime"]))
+            self.setItem(i, 5, QTableWidgetItem(FileInfo["atime"]))
 
 class FileInterface(ScrollArea):
     def __init__(self, parent=None):
@@ -94,31 +135,16 @@ class FileInterface(ScrollArea):
         self.object_name = "FileInterface"
         self.setObjectName(self.object_name)
         
-        self.pathlib = [] # 待处理的路径列表
+        
 
         # 创建布局实例
         self.vBoxLayout = QVBoxLayout(self)
         self.commandBar = CommandBar(self)
-        self.dropDownButton = self.createDropDownButton()
-
         # change button style
         self.commandBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
         # 创建文件表格
         self.tableView = CustomTableWidget(self)
-        # 设置 tableView 为不可编辑
-        self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        # enable border
-        self.tableView.setBorderVisible(True)
-        self.tableView.setBorderRadius(8)
-        self.tableView.setWordWrap(False)
-        # 设置行数和列数
-        self.len_row = len(self.pathlib)
-        self.columnTitles = ["路径", "文件（夹）名", "大小", "修改日期", "创建日期", "访问日期"]
-        self.len_column = len(self.columnTitles)
-        self.tableView.setColumnCount(self.len_column)
-        self.tableView_update()
-        self.tableView.setHorizontalHeaderLabels(self.columnTitles)
 
         # 添加按钮
         self.addButton(FluentIcon.PLAY, '压缩全部', )
@@ -130,6 +156,8 @@ class FileInterface(ScrollArea):
         # self.addButton(FluentIcon.CHECKBOX, "全选", self.select_all, True)
         # self.addButton(FluentIcon.CHECKBOX, "反选", self.tableView.counter_selection)
 
+        # 创建下拉按钮
+        self.dropDownButton = self.createDropDownButton()
         # add custom widget
         self.commandBar.addWidget(self.dropDownButton)
 
@@ -149,8 +177,9 @@ class FileInterface(ScrollArea):
 
     def createDropDownButton(self):
         button = TransparentDropDownPushButton('其它选项', self, FluentIcon.MORE)
-        # button.setFixedHeight(34)
-        # setFont(button, 12)
+        
+        remove_all = Action(FluentIcon.DELETE, '移出所有文件')
+        remove_all.triggered.connect(self.tableView.remove_all)
 
         menu = RoundMenu(parent=self)
         menu.addActions([
@@ -158,8 +187,11 @@ class FileInterface(ScrollArea):
             Action(FluentIcon.PLAY, '压缩选中文件'),
             Action(FluentIcon.PLAY, '单独压缩每个选中文件'),
             Action(FluentIcon.PLAY, '解压选中文件'),
+            remove_all,
+            Action(FluentIcon.DELETE, '移出选中文件')
         ])
         button.setMenu(menu)
+        
         return button       
 
     def addButton(self, icon, text, triggered=None):
@@ -169,19 +201,7 @@ class FileInterface(ScrollArea):
         action.triggered.connect(triggered)
         self.commandBar.addAction(action)
 
-    def tableView_update(self):
-        self.len_row = len(self.pathlib)
-        self.tableView.setRowCount(self.len_row)
-        for i, path in enumerate(self.pathlib):
-            FileInfo = getinfo(path)
-            # print(FileInfo)
-            self.tableView.setItem(i, 0, QTableWidgetItem(path))
-            self.tableView.setItem(i, 1, QTableWidgetItem(FileInfo["name"]))
-            self.tableView.setItem(i, 2, QTableWidgetItem(FileInfo["size"]))
-            self.tableView.setItem(i, 3, QTableWidgetItem(FileInfo["mtime"]))
-            self.tableView.setItem(i, 4, QTableWidgetItem(FileInfo["ctime"]))
-            self.tableView.setItem(i, 5, QTableWidgetItem(FileInfo["atime"]))
-        print(f"{self.object_name} tableView has been update")
+    
         
     def select_file(self):
         options = QFileDialog.Options()
@@ -189,9 +209,9 @@ class FileInterface(ScrollArea):
         fileName, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*)", options=options)
         if fileName:
             print(f"选择的文件：{fileName}")
-            self.pathlib.append(fileName)
-            self.pathlib = remove_nested(self.pathlib)
-            self.tableView_update()
+            self.tableView.pathlib.append(fileName)
+            self.tableView.pathlib = remove_nested(self.tableView.pathlib)
+            self.tableView.update()
             
     def select_folder(self):
         options = QFileDialog.Options()
@@ -199,11 +219,6 @@ class FileInterface(ScrollArea):
         folderName = QFileDialog.getExistingDirectory(self, "选择文件夹", "", options=options)
         if folderName:
             print(f"选择的文件夹：{folderName}")
-            self.pathlib.append(folderName)
-            self.pathlib = remove_nested(self.pathlib)
-            self.tableView_update()
-            
-    def remove_file(self, row):
-        self.pathlib.pop(row)
-        self.tableView_update()
-        print(f"{self.object_name} file has been removed")
+            self.tableView.pathlib.append(folderName)
+            self.tableView.pathlib = remove_nested(self.tableView.pathlib)
+            self.tableView.update()
