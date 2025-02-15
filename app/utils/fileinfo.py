@@ -25,8 +25,12 @@ def getctime(file_path):
 def getatime(file_path):
     access_time = os.path.getatime(file_path)
     return datetime.datetime.fromtimestamp(access_time).strftime('%Y-%m-%d %H:%M:%S')
+
+def getname(file_path):
+    return os.path.basename(file_path)
 def getinfo(file_path):
     return {
+        'file_name': getname(file_path),
         'file_size': getsize(file_path),
         'modification_time': getmtime(file_path),
         'creation_time': getctime(file_path),
