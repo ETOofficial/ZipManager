@@ -52,6 +52,32 @@ from ..utils.fileinfo import getinfo, remove_nested
     #     # show menu
     #     menu.exec(e.globalPos(), aniType=MenuAnimationType.DROP_DOWN)
 
+class CustomTableWidget(TableWidget):
+    def __init__(self, parent=None):
+        super().__init__(parent)
+
+    def mousePressEvent(self, event):
+        if event.button() == Qt.RightButton:
+            # 获取点击的单元格位置
+            index = self.indexAt(event.pos())
+            if index.isValid():
+                row = index.row()
+                column = index.column()
+                print(f"Right-click on Row {row}, Column {column}")
+                # # 显示上下文菜单
+                # self.showContextMenu(event.globalPos(), row, column)
+        elif event.button() == Qt.LeftButton:
+            # 处理左键点击事件
+            index = self.indexAt(event.pos())
+            if index.isValid():
+                row = index.row()
+                column = index.column()
+                print(f"Left-click on Row {row}, Column {column}")
+                # 你可以在这里添加更多的逻辑
+                path = self.parent().pathlib[row]
+                print(f"Selected path: {path}")
+        super().mousePressEvent(event)
+
 class FileInterface(ScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -75,12 +101,12 @@ class FileInterface(ScrollArea):
         self.addButton(FluentIcon.ADD, '添加文件夹', self.select_folder)
 
         # 创建文件表格
-        self.tableView = TableWidget(self)
+        self.tableView = CustomTableWidget(self)
         # 设置 tableView 为不可编辑
         self.tableView.setEditTriggers(QAbstractItemView.NoEditTriggers)
-        # 连接 cellClicked 信号到自定义槽函数
-        self.tableView.cellClicked.connect(self.on_cell_clicked)
-        self.tableView.cellDoubleClicked.connect(self.on_cell_double_clicked)
+        # # 连接 cellClicked 信号到自定义槽函数
+        # self.tableView.cellClicked.connect(self.on_cell_clicked)
+        # self.tableView.cellDoubleClicked.connect(self.on_cell_double_clicked)
         # enable border
         self.tableView.setBorderVisible(True)
         self.tableView.setBorderRadius(8)
