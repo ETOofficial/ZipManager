@@ -1,7 +1,8 @@
-from PyQt5.QtCore import Qt, QEvent
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QWidget, QLabel, QSpacerItem, QSizePolicy, QFrame, \
-    QApplication
-from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, TitleLabel, CardWidget
+from PyQt5.QtCore import Qt
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem
+from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget
+
+from ..utils.fileinfo import getinfo
 
 
 class FileInterface(ScrollArea):
@@ -32,13 +33,11 @@ class FileInterface(ScrollArea):
         self.tableView.setBorderRadius(8)
         self.tableView.setWordWrap(False)
         # 设置行数和列数
-        self.row = len(self.pathlib)
-        self.columnTitles = ["路径"]
-        self.column = len(self.columnTitles)
-        self.tableView.setRowCount(self.row)
-        self.tableView.setColumnCount(self.column)
-        for i, path in enumerate(self.pathlib):
-            self.tableView.setItem(i, 0, QTableWidgetItem(path))
+        self.len_row = len(self.pathlib)
+        self.columnTitles = ["路径", "文件（夹）名", "大小", "修改日期", "创建日期", "访问日期"]
+        self.len_column = len(self.columnTitles)
+        self.tableView.setColumnCount(self.len_column)
+        self.tableView_update()
         self.tableView.setHorizontalHeaderLabels(self.columnTitles)
 
     
@@ -56,4 +55,16 @@ class FileInterface(ScrollArea):
         action.triggered.connect(do)
         self.commandBar.addAction(action)
 
-    
+    def tableView_update(self):
+        self.len_row = len(self.pathlib)
+        self.tableView.setRowCount(self.len_row)
+        for i, path in enumerate(self.pathlib):
+            FileInfo = getinfo(path)
+            print(FileInfo)
+            self.tableView.setItem(i, 0, QTableWidgetItem(path))
+            self.tableView.setItem(i, 1, QTableWidgetItem(FileInfo["name"]))
+            self.tableView.setItem(i, 2, QTableWidgetItem(FileInfo["size"]))
+            self.tableView.setItem(i, 3, QTableWidgetItem(FileInfo["mtime"]))
+            self.tableView.setItem(i, 4, QTableWidgetItem(FileInfo["ctime"]))
+            self.tableView.setItem(i, 5, QTableWidgetItem(FileInfo["atime"]))
+        print(f"{self.object_name} tableView has been update")

@@ -1,3 +1,5 @@
+import os.path
+
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication, QTableWidgetItem
 from qfluentwidgets import FluentIcon, FluentWindow
@@ -46,26 +48,29 @@ class MainWindow(FluentWindow):
     def dropEvent(self, event):
         """鼠标释放事件"""
         print("鼠标释放")
-        paths = event.mimeData().text()
-        paths = paths.split('\n')
-        if paths[-1] == '':
-            del (paths[-1])
-        for i in range(len(paths)):
-            paths[i] = paths[i][8:]
-        print(paths)
-        self.fileInterface.pathlib.extend(paths)
+        path = event.mimeData().text()
+        path = path.split('\n')
+        if path[-1] == '':
+            del (path[-1])
+        for i in range(len(path)):
+            path[i] = path[i][8:]
+        print(path)
+        self.fileInterface.pathlib.extend(path)
         
         # 检查文件是否嵌套
         for i, path_i in enumerate(self.fileInterface.pathlib[:-1]):
             for j, path_j in enumerate(self.fileInterface.pathlib[i+1:]):
                 if len(path_i) >= len(path_j):
                     if path_i[:len(path_j)] == path_j:
-                        del(self.fileInterface.pathlib[i])
+                        self.fileInterface.pathlib[i] = ""
+                elif len(path_i) < len(path_j):
+                    if path_j[:len(path_i)] == path_i:
+                        self.fileInterface.pathlib[i+j+1] = ""
+        self.fileInterface.pathlib = [i for i in self.fileInterface.pathlib if i != ""]
         
-        self.fileInterface.row = len(self.fileInterface.pathlib)
-        self.fileInterface.tableView.setRowCount(self.fileInterface.row)
-        for i, paths in enumerate(self.fileInterface.pathlib):
-            self.fileInterface.tableView.setItem(i, 0, QTableWidgetItem(paths))
+        self.fileInterface.tableView_update()
+
+    
 
     def dragMoveEvent(self, event):
         """鼠标移动事件"""
