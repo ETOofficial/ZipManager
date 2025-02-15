@@ -1,12 +1,12 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAction, QAbstractItemView
-from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, MenuAnimationType, \
-    TransparentDropDownPushButton, setFont, SmoothScrollArea
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView
+from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
+    TransparentDropDownPushButton
 
 from ..utils.fileinfo import getinfo, remove_nested
+
 
 class CustomTableWidget(TableWidget):
     def __init__(self, parent=None):
@@ -116,6 +116,13 @@ class CustomTableWidget(TableWidget):
     def remove_all(self):
         self.pathlib = []
         self.update()
+        
+    def remove_selected(self):
+        select_rows = self.get_select_rows()
+        for i in select_rows:
+            self.pathlib.remove(self.pathlib[i])
+        self.clearSelection()
+        self.update()
 
     def update(self):
         self.len_row = len(self.pathlib)
@@ -180,6 +187,8 @@ class FileInterface(ScrollArea):
         
         remove_all = Action(FluentIcon.DELETE, '移出所有文件')
         remove_all.triggered.connect(self.tableView.remove_all)
+        remove_selected = Action(FluentIcon.DELETE, '移出选中文件')
+        remove_selected.triggered.connect(self.tableView.remove_selected)
 
         menu = RoundMenu(parent=self)
         menu.addActions([
@@ -188,7 +197,7 @@ class FileInterface(ScrollArea):
             Action(FluentIcon.PLAY, '单独压缩每个选中文件'),
             Action(FluentIcon.PLAY, '解压选中文件'),
             remove_all,
-            Action(FluentIcon.DELETE, '移出选中文件')
+            remove_selected
         ])
         button.setMenu(menu)
         

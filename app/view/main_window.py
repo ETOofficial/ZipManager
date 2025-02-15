@@ -1,12 +1,9 @@
-import os.path
-
-from PyQt5.QtGui import QIcon
-from PyQt5.QtWidgets import QApplication, QTableWidgetItem
+from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon, FluentWindow
 
 from .fileInterface import FileInterface
-
 from ..utils.fileinfo import remove_nested
+
 
 class MainWindow(FluentWindow):
 
