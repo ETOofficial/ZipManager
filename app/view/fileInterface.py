@@ -81,19 +81,24 @@ class CustomTableWidget(TableWidget):
     def mouseDoubleClickEvent(self, event):
         # 获取双击的单元格位置
         index = self.indexAt(event.pos())
+        row = index.row()
+        column = index.column()
+        # 检查 Ctrl 键是否被按下
         if index.isValid():
-            row = index.row()
-            column = index.column()
-            print(f"Double-click on Row {row}, Column {column}")
-            # 你可以在这里添加更多的逻辑
-            path = self.parent().pathlib[row]
-            print(f"Double-clicked path: {path}")
-            if os.path.isfile(path):
-                os.startfile(path)
-            elif os.path.isdir(path):
-                os.startfile(path)
+            if event.modifiers() & Qt.ControlModifier:
+                print("Ctrl + Double-click detected")
+                # 你可以在这里添加更多的逻辑
             else:
-                print("Invalidpath")
+                print(f"Double-click on Row {row}, Column {column}")
+                # 你可以在这里添加更多的逻辑
+                path = self.parent().pathlib[row]
+                print(f"Double-clicked path: {path}")
+                if os.path.isfile(path):
+                    os.startfile(path)
+                elif os.path.isdir(path):
+                    os.startfile(path)
+                else:
+                    print("Invalidpath")
         super().mouseDoubleClickEvent(event)
 
 class FileInterface(ScrollArea):
