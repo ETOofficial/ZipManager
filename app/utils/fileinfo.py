@@ -30,9 +30,9 @@ def getname(file_path):
     return os.path.basename(file_path)
 def getinfo(file_path):
     return {
-        'file_name': getname(file_path),
-        'file_size': getsize(file_path),
-        'modification_time': getmtime(file_path),
-        'creation_time': getctime(file_path),
-        'access_time': getatime(file_path)
+        'name': getname(file_path),
+        'size': getsize(file_path),
+        'mtime': getmtime(file_path),
+        'ctime': getctime(file_path),
+        'atime': getatime(file_path)
     }
