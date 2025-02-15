@@ -95,9 +95,12 @@ class CustomTableWidget(TableWidget):
 
     def contextMenu(self, event, row, column):
         menu = RoundMenu(parent=self)
+        
+        remove = Action(FluentIcon.DELETE, '移出列表')
+        remove.triggered.connect(lambda: self.remove_row(row))
 
         menu.addActions([
-            Action(FluentIcon.DELETE, '移出列表'),
+            remove,
             Action(FluentIcon.FOLDER, '打开文件所在文件夹'),
             Action(FluentIcon.PLAY, '打开文件（夹）')
         ])
@@ -105,7 +108,7 @@ class CustomTableWidget(TableWidget):
         menu.exec(event.globalPos())
         
     def remove_row(self, row):
-        self.pathlib.remove(row)
+        del(self.pathlib[row])
         self.update()
         
     def pop_row(self, row):
