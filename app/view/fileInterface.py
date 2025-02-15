@@ -78,6 +78,24 @@ class CustomTableWidget(TableWidget):
                 print(f"Selected path: {path}")
         super().mousePressEvent(event)
 
+    def mouseDoubleClickEvent(self, event):
+        # 获取双击的单元格位置
+        index = self.indexAt(event.pos())
+        if index.isValid():
+            row = index.row()
+            column = index.column()
+            print(f"Double-click on Row {row}, Column {column}")
+            # 你可以在这里添加更多的逻辑
+            path = self.parent().pathlib[row]
+            print(f"Double-clicked path: {path}")
+            if os.path.isfile(path):
+                os.startfile(path)
+            elif os.path.isdir(path):
+                os.startfile(path)
+            else:
+                print("Invalidpath")
+        super().mouseDoubleClickEvent(event)
+
 class FileInterface(ScrollArea):
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -170,25 +188,25 @@ class FileInterface(ScrollArea):
             self.pathlib = remove_nested(self.pathlib)
             self.tableView_update()
 
-    def on_cell_clicked(self, row, column):
-        # 处理行点击事件
-        print(f"Row {row}, Column {column} clicked")
-        # 你可以在这里添加更多的逻辑
-        path = self.pathlib[row]
-        print(f"Selected path: {path}")
-        
-    def on_cell_double_clicked(self, row, column):
-        # 处理双击事件
-        print(f"Row {row}, Column {column} double clicked")
-        # 你可以在这里添加更多的逻辑
-        path = self.pathlib[row]
-        print(f"Selected path: {path}")
-        if os.path.isfile(path):
-            os.startfile(path)
-        elif os.path.isdir(path):
-            os.startfile(path)
-        else:
-            print("Invalidpath")
+    # def on_cell_clicked(self, row, column):
+    #     # 处理行点击事件
+    #     print(f"Row {row}, Column {column} clicked")
+    #     # 你可以在这里添加更多的逻辑
+    #     path = self.pathlib[row]
+    #     print(f"Selected path: {path}")
+    #     
+    # def on_cell_double_clicked(self, row, column):
+    #     # 处理双击事件
+    #     print(f"Row {row}, Column {column} double clicked")
+    #     # 你可以在这里添加更多的逻辑
+    #     path = self.pathlib[row]
+    #     print(f"Selected path: {path}")
+    #     if os.path.isfile(path):
+    #         os.startfile(path)
+    #     elif os.path.isdir(path):
+    #         os.startfile(path)
+    #     else:
+    #         print("Invalidpath")
             
     def remove_file(self, row):
         self.pathlib.pop(row)

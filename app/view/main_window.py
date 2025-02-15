@@ -67,7 +67,8 @@ class MainWindow(FluentWindow):
 
     def dragMoveEvent(self, event):
         """鼠标移动事件"""
-        print("鼠标移动")
+        # print("鼠标移动")
+        pass
 
 if __name__ == "__main__":
     import sys
