@@ -21,10 +21,6 @@ class MainWindow(FluentWindow):
         # create splash screen and show window
         self.splashScreen = SplashScreen(self.windowIcon(), self)
         self.show()
-        
-        if isWin11():
-            print("is win11")
-            self.setMicaEffectEnabled(True)
             
         # 设置窗口位置及大小
         desktop = QApplication.desktop().availableGeometry()
@@ -83,9 +79,10 @@ class MainWindow(FluentWindow):
                 "atime": file_info["atime"]
             })
         self.fileInterface.tableView.pathinfolib.extend(files_info)
+        self.stackedWidget.setCurrentWidget(self.fileInterface)
 
         # 检查文件是否嵌套
-        self.fileInterface.tableView.pathinfolib = remove_nested(self.fileInterface.tableView.pathinfolib, False)
+        self.fileInterface.tableView.pathinfolib = remove_nested(self.fileInterface.tableView.pathinfolib)
 
         self.fileInterface.tableView.update()
 

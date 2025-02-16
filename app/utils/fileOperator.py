@@ -37,16 +37,17 @@ def getinfo(path):
         'atime': getatime(path)
     }
 
-def remove_nested(lst, isPathList=True, key="path"):
+def remove_nested(lst, key="path"):
     """
     移除嵌套的文件（夹）
     
     :param lst: **路径列表** 或 **文件信息（字典）列表**
-    :param isPathList: 如果 ``lst`` 是 **路径列表** 则为 ``True`` ，如果是 **文件信息列表** 则为 ``False`` 。不接受其他列表。
     :param key: 键名
     :returns: 处理过的列表
     """
-    if isPathList:
+    if not lst:
+        return lst
+    if isinstance(lst[0], str):
         for i, path_i in enumerate(lst[:-1]):
             for j, path_j in enumerate(lst[i + 1:]):
                 if len(path_i) >= len(path_j):
@@ -57,7 +58,7 @@ def remove_nested(lst, isPathList=True, key="path"):
                         lst[i + j + 1] = ""
         lst = [i for i in lst if i != ""]
         return lst
-    else:
+    if isinstance(lst[0], dict):
         for i, path_i in enumerate(lst[:-1]):
             for j, path_j in enumerate(lst[i + 1:]):
                 if len(path_i[key]) >= len(path_j[key]):
@@ -68,6 +69,9 @@ def remove_nested(lst, isPathList=True, key="path"):
                         lst[i + j + 1][key] = ""
         lst = [i for i in lst if i[key] != ""]
         return lst
+    else:
+        raise TypeError("lst must be a list of strings or a list of dictionaries")
+        
     
 def dict_to_list(dic:dict, sort:list[str]):
     return [dic[i] for i in sort]

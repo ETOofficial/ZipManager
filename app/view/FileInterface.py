@@ -102,7 +102,7 @@ class CustomTableWidget(TableWidget):
         remove_selected = Action(FluentIcon.DELETE, '移出选中文件')
         remove_selected.triggered.connect(self.remove_selected)
         open_dir = Action(FluentIcon.FOLDER, '打开文件所在位置')
-        open_dir.triggered.connect()
+        open_dir.triggered.connect(lambda: os.startfile(os.path.dirname(self.pathinfolib[row]["path"])))
         
         menu.addActions([
             remove,
@@ -227,7 +227,7 @@ class FileInterface(ScrollArea):
         if file_path:
             print(f"选择的文件：{file_path}")
             self.tableView.pathinfolib.append({**{"path": file_path}, **getinfo(file_path)})
-            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib, False)
+            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib)
             self.tableView.update()
             
     def select_folder(self):
@@ -237,5 +237,5 @@ class FileInterface(ScrollArea):
         if file_path:
             print(f"选择的文件夹：{file_path}")
             self.tableView.pathinfolib.append({**{"path": file_path}, **getinfo(file_path)})
-            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib, False)
+            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib)
             self.tableView.update()
