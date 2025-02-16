@@ -22,7 +22,7 @@ class CustomTableWidget(TableWidget):
         self.setWordWrap(False)
         # 设置行数和列数
         self.len_row = len(self.pathinfolib)
-        self.columnTitles = ["路径", "文件（夹）名", "大小", "修改日期", "创建日期", "访问日期"]
+        self.columnTitles = [self.tr("路径"), self.tr("文件（夹）名"), self.tr("大小"), self.tr("修改日期"), self.tr("创建日期"), self.tr("访问日期")]
         self.columnKeys = ["path", "name", "size", "mtime", "ctime", "atime"]
         self.len_column = len(self.columnTitles)
         self.setColumnCount(self.len_column)
@@ -95,13 +95,13 @@ class CustomTableWidget(TableWidget):
     def contextMenu(self, event, row, column):
         menu = RoundMenu(parent=self)
         
-        remove = Action(FluentIcon.DELETE, '移出列表')
+        remove = Action(FluentIcon.DELETE, self.tr('移出列表'))
         remove.triggered.connect(lambda: self.remove_row(row))
-        remove_all = Action(FluentIcon.DELETE, '移出所有文件')
+        remove_all = Action(FluentIcon.DELETE, self.tr('移出所有文件'))
         remove_all.triggered.connect(self.remove_all)
-        remove_selected = Action(FluentIcon.DELETE, '移出选中文件')
+        remove_selected = Action(FluentIcon.DELETE, self.tr('移出选中文件'))
         remove_selected.triggered.connect(self.remove_selected)
-        open_dir = Action(FluentIcon.FOLDER, '打开文件所在位置')
+        open_dir = Action(FluentIcon.FOLDER, self.tr('打开文件所在位置'))
         open_dir.triggered.connect(lambda: os.startfile(os.path.dirname(self.pathinfolib[row]["path"])))
         
         menu.addActions([
@@ -162,12 +162,12 @@ class FileInterface(ScrollArea):
         self.tableView = CustomTableWidget(self)
 
         # 添加按钮
-        self.addButton(FluentIcon.PLAY, '压缩全部', )
-        self.addButton(FluentIcon.PLAY, '解压全部', )
+        self.addButton(FluentIcon.PLAY, self.tr('压缩全部'), )
+        self.addButton(FluentIcon.PLAY, self.tr('解压全部'), )
         self.commandBar.addSeparator()
-        self.addButton(FluentIcon.ADD, '添加文件', self.select_file)
-        self.addButton(FluentIcon.ADD, '添加文件夹', self.select_folder)
-        self.commandBar.addAction(Action(FluentIcon.CHECKBOX, '全选', triggered=self.select_all, checkable=True))
+        self.addButton(FluentIcon.ADD, self.tr('添加文件'), self.select_file)
+        self.addButton(FluentIcon.ADD, self.tr('添加文件夹'), self.select_folder)
+        self.commandBar.addAction(Action(FluentIcon.CHECKBOX, self.tr('全选'), triggered=self.select_all, checkable=True))
         # self.addButton(FluentIcon.CHECKBOX, "全选", self.select_all, True)
         # self.addButton(FluentIcon.CHECKBOX, "反选", self.tableView.counter_selection)
 
@@ -191,11 +191,11 @@ class FileInterface(ScrollArea):
             self.tableView.clearSelection()
 
     def createDropDownButton(self):
-        button = TransparentDropDownPushButton('其它选项', self, FluentIcon.MORE)
+        button = TransparentDropDownPushButton(self.tr('其它选项'), self, FluentIcon.MORE)
         
-        remove_all = Action(FluentIcon.DELETE, '移出所有文件')
+        remove_all = Action(FluentIcon.DELETE, self.tr('移出所有文件'))
         remove_all.triggered.connect(self.tableView.remove_all)
-        remove_selected = Action(FluentIcon.DELETE, '移出选中文件')
+        remove_selected = Action(FluentIcon.DELETE, self.tr('移出选中文件'))
         remove_selected.triggered.connect(self.tableView.remove_selected)
 
         menu = RoundMenu(parent=self)
@@ -223,7 +223,7 @@ class FileInterface(ScrollArea):
     def select_file(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*)", options=options)
+        file_path, _ = QFileDialog.getOpenFileName(self, self.tr("选择文件"), "", "All Files (*)", options=options)
         if file_path:
             print(f"选择的文件：{file_path}")
             self.tableView.pathinfolib.append({**{"path": file_path}, **getinfo(file_path)})
@@ -233,7 +233,7 @@ class FileInterface(ScrollArea):
     def select_folder(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        file_path = QFileDialog.getExistingDirectory(self, "选择文件夹", "", options=options)
+        file_path = QFileDialog.getExistingDirectory(self, self.tr("选择文件夹"), "", options=options)
         if file_path:
             print(f"选择的文件夹：{file_path}")
             self.tableView.pathinfolib.append({**{"path": file_path}, **getinfo(file_path)})

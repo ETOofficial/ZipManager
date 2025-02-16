@@ -2,14 +2,13 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon, FluentWindow, SplashScreen, NavigationItemPosition
 
+from app.common.config import user_config as ucfg
+from app.common.debug import sleep
+from app.utils.fileOperator import remove_nested, getinfo
+from app.view.FileInterface import FileInterface
 from app.view.SettingInterface import SettingInterface
 from app.view.TaskInterface import TaskInterface
-from app.view.FileInterface import FileInterface
-from app.utils.fileOperator import remove_nested, getinfo
 
-from app.common.config import user_config as ucfg
-from app.common.config import isWin11
-from app.common.debug import sleep
 
 class MainWindow(FluentWindow):
 
@@ -42,9 +41,9 @@ class MainWindow(FluentWindow):
         self.splashScreen.finish()
 
     def initNavigation(self):
-        self.addSubInterface(self.taskInterface, FluentIcon.PLAY, '任务')
-        self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, '文件')
-        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, '设置', NavigationItemPosition.BOTTOM)
+        self.addSubInterface(self.taskInterface, FluentIcon.PLAY, self.tr('任务'))
+        self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, self.tr('文件'))
+        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, self.tr('设置'), NavigationItemPosition.BOTTOM)
         if ucfg["debug"]:
             sleep(self)
 
@@ -94,7 +93,7 @@ class MainWindow(FluentWindow):
 
 if __name__ == "__main__":
     import sys
-    from PyQt5.QtCore import Qt, QSize
+    from PyQt5.QtCore import Qt
 
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
