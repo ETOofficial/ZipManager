@@ -5,11 +5,13 @@ from .TaskInterface import TaskInterface
 from .FileInterface import FileInterface
 from ..utils.fileinfo import remove_nested, getinfo
 
+from ..common.config import user_config as ucfg
 
 class MainWindow(FluentWindow):
 
     def __init__(self):
         super().__init__()
+        
 
         # create sub interface
         self.taskInterface = TaskInterface(self)
@@ -17,7 +19,7 @@ class MainWindow(FluentWindow):
 
         self.initWindow()
         self.initNavigation()
-        
+
         
         
 
@@ -27,15 +29,14 @@ class MainWindow(FluentWindow):
         
 
     def initWindow(self):
-        
         # self.setWindowIcon(QIcon(':/ZipManager/images/logo.png'))
-        self.setWindowTitle('PyQt-Fluent-Widgets')
-        self.resize(900, 700)
-        self.setAcceptDrops(True)
-
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()
-        self.move(w//2 - self.width()//2, h//2 - self.height()//2)
+        self.setWindowTitle('PyQt-Fluent-Widgets')
+        self.resize(int(w*ucfg["main_win_size_per"]["w"]), int(h*ucfg["main_win_size_per"]["h"]))
+        self.move(int(w*ucfg["main_win_pos_per"]["x"]), int(h*ucfg["main_win_pos_per"]["y"]))
+
+        self.setAcceptDrops(True)
 
     def dragEnterEvent(self, evn):
         """鼠标拖入事件"""
