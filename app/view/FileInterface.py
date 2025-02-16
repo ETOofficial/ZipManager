@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstrac
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
     TransparentDropDownPushButton
 
-from ..utils.fileinfo import remove_nested, dictList_to_listList
+from ..utils.fileOperator import remove_nested, dictList_to_listList, getinfo
 
 
 class CustomTableWidget(TableWidget):
@@ -58,7 +58,7 @@ class CustomTableWidget(TableWidget):
         index = self.indexAt(event.pos())
         row = index.row()
         column = index.column()
-        path = self.parent().pathinfolib[row]
+        path = self.parent().pathinfolib[row]["path"]
         if index.isValid():
             # 检查 Ctrl 键是否被按下
             if event.modifiers() & Qt.ControlModifier:
@@ -68,9 +68,7 @@ class CustomTableWidget(TableWidget):
                 print(f"Double-click on Row {row}, Column {column}")
                 # 你可以在这里添加更多的逻辑
                 print(f"Double-clicked path: {path}")
-                if os.path.isfile(path):
-                    os.startfile(path)
-                elif os.path.isdir(path):
+                if os.path.isfile(path) or os.path.isdir(path):
                     os.startfile(path)
                 else:
                     print("Invalidpath")
@@ -103,10 +101,14 @@ class CustomTableWidget(TableWidget):
         remove_all.triggered.connect(self.remove_all)
         remove_selected = Action(FluentIcon.DELETE, '移出选中文件')
         remove_selected.triggered.connect(self.remove_selected)
+        open_dir = Action(FluentIcon.FOLDER, '打开文件所在位置')
+        open_dir.triggered.connect()
         
         menu.addActions([
             remove,
-            Action(FluentIcon.FOLDER, '打开文件所在文件夹'),
+            remove_all,
+            remove_selected,
+            open_dir,
             Action(FluentIcon.PLAY, '打开文件（夹）')
         ])
 
@@ -221,19 +223,19 @@ class FileInterface(ScrollArea):
     def select_file(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        fileName, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*)", options=options)
-        if fileName:
-            print(f"选择的文件：{fileName}")
-            self.tableView.pathinfolib.append(fileName)
-            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib)
+        file_path, _ = QFileDialog.getOpenFileName(self, "选择文件", "", "All Files (*)", options=options)
+        if file_path:
+            print(f"选择的文件：{file_path}")
+            self.tableView.pathinfolib.append({**{"path": file_path}, **getinfo(file_path)})
+            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib, False)
             self.tableView.update()
             
     def select_folder(self):
         options = QFileDialog.Options()
         options |= QFileDialog.DontUseNativeDialog
-        folderName = QFileDialog.getExistingDirectory(self, "选择文件夹", "", options=options)
-        if folderName:
-            print(f"选择的文件夹：{folderName}")
-            self.tableView.pathinfolib.append(folderName)
-            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib)
+        file_path = QFileDialog.getExistingDirectory(self, "选择文件夹", "", options=options)
+        if file_path:
+            print(f"选择的文件夹：{file_path}")
+            self.tableView.pathinfolib.append({**{"path": file_path}, **getinfo(file_path)})
+            self.tableView.pathinfolib = remove_nested(self.tableView.pathinfolib, False)
             self.tableView.update()

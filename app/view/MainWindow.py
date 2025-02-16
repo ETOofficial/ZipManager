@@ -1,42 +1,55 @@
+from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
-from qfluentwidgets import FluentIcon, FluentWindow
+from qfluentwidgets import FluentIcon, FluentWindow, SplashScreen
+from PyQt5.QtCore import QSize, QEventLoop, QTimer
 
 from .TaskInterface import TaskInterface
 from .FileInterface import FileInterface
-from ..utils.fileinfo import remove_nested, getinfo
+from ..utils.fileOperator import remove_nested, getinfo
 
 from ..common.config import user_config as ucfg
+from ..common.config import isWin11
+from ..common.debug import sleep
 
 class MainWindow(FluentWindow):
 
     def __init__(self):
         super().__init__()
+        self.setWindowTitle('Zip Manager')
+        self.setWindowIcon(QIcon('app/resource/images/logo.png'))
+
+        # create splash screen and show window
+        self.splashScreen = SplashScreen(self.windowIcon(), self)
+        self.splashScreen.setIconSize(QSize(102, 102))
         
+        self.show()
+        
+        if isWin11():
+            print("is win11")
+            self.setMicaEffectEnabled(True)
+            
+        desktop = QApplication.desktop().availableGeometry()
+        w, h = desktop.width(), desktop.height()
+        self.resize(int(w * ucfg["main_win_size_per"]["w"]), int(h * ucfg["main_win_size_per"]["h"]))
+        self.move(int(w * ucfg["main_win_pos_per"]["x"]), int(h * ucfg["main_win_pos_per"]["y"]))
+        del desktop, w, h
 
         # create sub interface
         self.taskInterface = TaskInterface(self)
         self.fileInterface = FileInterface(self)
 
-        self.initWindow()
         self.initNavigation()
 
-        
-        
+        self.setAcceptDrops(True)
+
+        # close splash screen
+        self.splashScreen.finish()
 
     def initNavigation(self):
         self.addSubInterface(self.taskInterface, FluentIcon.PLAY, '任务')
         self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, '文件')
-        
-
-    def initWindow(self):
-        # self.setWindowIcon(QIcon(':/ZipManager/images/logo.png'))
-        desktop = QApplication.desktop().availableGeometry()
-        w, h = desktop.width(), desktop.height()
-        self.setWindowTitle('PyQt-Fluent-Widgets')
-        self.resize(int(w*ucfg["main_win_size_per"]["w"]), int(h*ucfg["main_win_size_per"]["h"]))
-        self.move(int(w*ucfg["main_win_pos_per"]["x"]), int(h*ucfg["main_win_pos_per"]["y"]))
-
-        self.setAcceptDrops(True)
+        if ucfg["debug"]:
+            sleep(self)
 
     def dragEnterEvent(self, evn):
         """鼠标拖入事件"""
@@ -57,7 +70,7 @@ class MainWindow(FluentWindow):
         for i in range(len(paths)):
             paths[i] = paths[i][8:]
         print(paths)
-        files_info=[]
+        files_info = []
         for i, path in enumerate(paths):
             file_info = getinfo(path)
             files_info.append({
@@ -69,22 +82,21 @@ class MainWindow(FluentWindow):
                 "atime": file_info["atime"]
             })
         self.fileInterface.tableView.pathinfolib.extend(files_info)
-        
+
         # 检查文件是否嵌套
         self.fileInterface.tableView.pathinfolib = remove_nested(self.fileInterface.tableView.pathinfolib, False)
-        
-        self.fileInterface.tableView.update()
 
-    
+        self.fileInterface.tableView.update()
 
     def dragMoveEvent(self, event):
         """鼠标移动事件"""
         # print("鼠标移动")
         pass
 
+
 if __name__ == "__main__":
     import sys
-    from PyQt5.QtCore import Qt
+    from PyQt5.QtCore import Qt, QSize
 
     QApplication.setHighDpiScaleFactorRoundingPolicy(Qt.HighDpiScaleFactorRoundingPolicy.PassThrough)
     QApplication.setAttribute(Qt.AA_EnableHighDpiScaling)
