@@ -37,15 +37,41 @@ def getinfo(path):
         'atime': getatime(path)
     }
 
-def remove_nested(path_list):
-    """移除嵌套的文件（夹）"""
-    for i, path_i in enumerate(path_list[:-1]):
-        for j, path_j in enumerate(path_list[i+1:]):
-            if len(path_i) >= len(path_j):
-                if path_i[:len(path_j)] == path_j:
-                    path_list[i] = ""
-            elif len(path_i) < len(path_j):
-                if path_j[:len(path_i)] == path_i:
-                    path_list[i+j+1] = ""
-    path_list = [i for i in path_list if i != ""]
-    return path_list
+def remove_nested(lst, isPathList=True, key="path"):
+    """
+    移除嵌套的文件（夹）
+    
+    :param lst: **路径列表** 或 **文件信息（字典）列表**
+    :param isPathList: 如果 ``lst`` 是 **路径列表** 则为 ``True`` ，如果是 **文件信息列表** 则为 ``False`` 。不接受其他列表。
+    :param key: 键名
+    :returns: 处理过的列表
+    """
+    if isPathList:
+        for i, path_i in enumerate(lst[:-1]):
+            for j, path_j in enumerate(lst[i + 1:]):
+                if len(path_i) >= len(path_j):
+                    if path_i[:len(path_j)] == path_j:
+                        lst[i] = ""
+                elif len(path_i) < len(path_j):
+                    if path_j[:len(path_i)] == path_i:
+                        lst[i + j + 1] = ""
+        lst = [i for i in lst if i != ""]
+        return lst
+    else:
+        for i, path_i in enumerate(lst[:-1]):
+            for j, path_j in enumerate(lst[i + 1:]):
+                if len(path_i[key]) >= len(path_j[key]):
+                    if path_i[key][:len(path_j[key])] == path_j[key]:
+                        lst[i][key] = ""
+                elif len(path_i[key]) < len(path_j[key]):
+                    if path_j[key][:len(path_i[key])] == path_i[key]:
+                        lst[i + j + 1][key] = ""
+        lst = [i for i in lst if i[key] != ""]
+        return lst
+    
+def dict_to_list(dic:dict, sort:list[str]):
+    return [dic[i] for i in sort]
+
+def dictList_to_listList(dicList:list[dict], sort:list[str]):
+    """将字典列表转为列表列表，便于表格传参"""
+    return [dict_to_list(i, sort) for i in dicList]

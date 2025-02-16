@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstrac
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
     TransparentDropDownPushButton
 
-from ..utils.fileinfo import getinfo, remove_nested
+from ..utils.fileinfo import getinfo, remove_nested, dictList_to_listList
 
 
 class CustomTableWidget(TableWidget):
@@ -23,6 +23,7 @@ class CustomTableWidget(TableWidget):
         # 设置行数和列数
         self.len_row = len(self.pathlib)
         self.columnTitles = ["路径", "文件（夹）名", "大小", "修改日期", "创建日期", "访问日期"]
+        self.columnKeys = ["path", "name", "size", "mtime", "ctime", "atime"]
         self.len_column = len(self.columnTitles)
         self.setColumnCount(self.len_column)
         self.update()
@@ -98,7 +99,11 @@ class CustomTableWidget(TableWidget):
         
         remove = Action(FluentIcon.DELETE, '移出列表')
         remove.triggered.connect(lambda: self.remove_row(row))
-
+        remove_all = Action(FluentIcon.DELETE, '移出所有文件')
+        remove_all.triggered.connect(self.remove_all)
+        remove_selected = Action(FluentIcon.DELETE, '移出选中文件')
+        remove_selected.triggered.connect(self.remove_selected)
+        
         menu.addActions([
             remove,
             Action(FluentIcon.FOLDER, '打开文件所在文件夹'),
@@ -117,6 +122,7 @@ class CustomTableWidget(TableWidget):
         return row
         
     def remove_all(self):
+        # 弹出确定窗口
         self.pathlib = []
         self.update()
         
@@ -130,14 +136,11 @@ class CustomTableWidget(TableWidget):
     def update(self):
         self.len_row = len(self.pathlib)
         self.setRowCount(self.len_row)
-        for i, path in enumerate(self.pathlib):
-            FileInfo = getinfo(path)
-            self.setItem(i, 0, QTableWidgetItem(path))
-            self.setItem(i, 1, QTableWidgetItem(FileInfo["name"]))
-            self.setItem(i, 2, QTableWidgetItem(FileInfo["size"]))
-            self.setItem(i, 3, QTableWidgetItem(FileInfo["mtime"]))
-            self.setItem(i, 4, QTableWidgetItem(FileInfo["ctime"]))
-            self.setItem(i, 5, QTableWidgetItem(FileInfo["atime"]))
+        list_info = dictList_to_listList(self.pathlib, self.columnKeys)
+        for i in range(self.len_row):
+            for j in range(self.len_column):
+                self.setItem(i, j, QTableWidgetItem(str(list_info[i][j])))
+                
 
 class FileInterface(ScrollArea):
     def __init__(self, parent=None):

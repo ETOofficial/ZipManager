@@ -2,7 +2,7 @@ from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon, FluentWindow
 
 from .fileInterface import FileInterface
-from ..utils.fileinfo import remove_nested
+from ..utils.fileinfo import remove_nested, getinfo
 
 
 class MainWindow(FluentWindow):
@@ -46,17 +46,28 @@ class MainWindow(FluentWindow):
     def dropEvent(self, event):
         """鼠标释放事件"""
         print("鼠标释放")
-        path = event.mimeData().text()
-        path = path.split('\n')
-        if path[-1] == '':
-            del (path[-1])
-        for i in range(len(path)):
-            path[i] = path[i][8:]
-        print(path)
-        self.fileInterface.tableView.pathlib.extend(path)
+        paths = event.mimeData().text()
+        paths = paths.split('\n')
+        if paths[-1] == '':
+            del (paths[-1])
+        for i in range(len(paths)):
+            paths[i] = paths[i][8:]
+        print(paths)
+        files_info=[]
+        for i, path in enumerate(paths):
+            file_info = getinfo(path)
+            files_info.append({
+                "path": path,
+                "name": file_info["name"],
+                "size": file_info["size"],
+                "mtime": file_info["mtime"],
+                "ctime": file_info["ctime"],
+                "atime": file_info["atime"]
+            })
+        self.fileInterface.tableView.pathlib.extend(files_info)
         
         # 检查文件是否嵌套
-        self.fileInterface.tableView.pathlib = remove_nested(self.fileInterface.tableView.pathlib)
+        self.fileInterface.tableView.pathlib = remove_nested(self.fileInterface.tableView.pathlib, False)
         
         self.fileInterface.tableView.update()
 
