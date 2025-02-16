@@ -1,7 +1,8 @@
 from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon, FluentWindow
 
-from .fileInterface import FileInterface
+from .TaskInterface import TaskInterface
+from .FileInterface import FileInterface
 from ..utils.fileinfo import remove_nested, getinfo
 
 
@@ -11,6 +12,7 @@ class MainWindow(FluentWindow):
         super().__init__()
 
         # create sub interface
+        self.taskInterface = TaskInterface(self)
         self.fileInterface = FileInterface(self)
 
         self.initWindow()
@@ -20,8 +22,9 @@ class MainWindow(FluentWindow):
         
 
     def initNavigation(self):
+        self.addSubInterface(self.taskInterface, FluentIcon.PLAY, '任务')
         self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, '文件')
-
+        
 
     def initWindow(self):
         
@@ -64,10 +67,10 @@ class MainWindow(FluentWindow):
                 "ctime": file_info["ctime"],
                 "atime": file_info["atime"]
             })
-        self.fileInterface.tableView.pathlib.extend(files_info)
+        self.fileInterface.tableView.pathinfolib.extend(files_info)
         
         # 检查文件是否嵌套
-        self.fileInterface.tableView.pathlib = remove_nested(self.fileInterface.tableView.pathlib, False)
+        self.fileInterface.tableView.pathinfolib = remove_nested(self.fileInterface.tableView.pathinfolib, False)
         
         self.fileInterface.tableView.update()
 
