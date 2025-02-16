@@ -1,15 +1,15 @@
 from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
-from qfluentwidgets import FluentIcon, FluentWindow, SplashScreen
-from PyQt5.QtCore import QSize, QEventLoop, QTimer
+from qfluentwidgets import FluentIcon, FluentWindow, SplashScreen, NavigationItemPosition
 
-from .TaskInterface import TaskInterface
-from .FileInterface import FileInterface
-from ..utils.fileOperator import remove_nested, getinfo
+from app.view.SettingInterface import SettingInterface
+from app.view.TaskInterface import TaskInterface
+from app.view.FileInterface import FileInterface
+from app.utils.fileOperator import remove_nested, getinfo
 
-from ..common.config import user_config as ucfg
-from ..common.config import isWin11
-from ..common.debug import sleep
+from app.common.config import user_config as ucfg
+from app.common.config import isWin11
+from app.common.debug import sleep
 
 class MainWindow(FluentWindow):
 
@@ -20,14 +20,13 @@ class MainWindow(FluentWindow):
 
         # create splash screen and show window
         self.splashScreen = SplashScreen(self.windowIcon(), self)
-        self.splashScreen.setIconSize(QSize(102, 102))
-        
         self.show()
         
         if isWin11():
             print("is win11")
             self.setMicaEffectEnabled(True)
             
+        # 设置窗口位置及大小
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()
         self.resize(int(w * ucfg["main_win_size_per"]["w"]), int(h * ucfg["main_win_size_per"]["h"]))
@@ -37,6 +36,7 @@ class MainWindow(FluentWindow):
         # create sub interface
         self.taskInterface = TaskInterface(self)
         self.fileInterface = FileInterface(self)
+        self.settingInterface = SettingInterface(self)
 
         self.initNavigation()
 
@@ -48,6 +48,7 @@ class MainWindow(FluentWindow):
     def initNavigation(self):
         self.addSubInterface(self.taskInterface, FluentIcon.PLAY, '任务')
         self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, '文件')
+        self.addSubInterface(self.settingInterface, FluentIcon.SETTING, '设置', NavigationItemPosition.BOTTOM)
         if ucfg["debug"]:
             sleep(self)
 

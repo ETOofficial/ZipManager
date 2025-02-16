@@ -5,7 +5,7 @@ from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstrac
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
     TransparentDropDownPushButton
 
-from ..utils.fileOperator import remove_nested, dictList_to_listList, getinfo
+from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
 
 
 class CustomTableWidget(TableWidget):
