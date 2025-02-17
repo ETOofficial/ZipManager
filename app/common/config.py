@@ -1,10 +1,8 @@
 import json
 import sys
-from plistlib import loads
 
-from qfluentwidgets import ConfigItem, QConfig, BoolValidator
 
-def isWin11():
+def is_win11():
     return sys.platform == 'win32' and sys.getwindowsversion().build >= 22000
 
 # class Config(QConfig):
@@ -27,5 +25,5 @@ class UserConfig:
         print(json.dumps(self.config, indent=indent))
 
 user_config = UserConfig()
-user_config = user_config.config
+ucfg = user_config.config
 # cfg = Config()

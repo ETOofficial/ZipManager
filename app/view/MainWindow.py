@@ -2,7 +2,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon, FluentWindow, SplashScreen, NavigationItemPosition
 
-from app.common.config import user_config as ucfg
+from app.common.config import ucfg
 from app.common.debug import sleep
 from app.utils.fileOperator import remove_nested, getinfo
 from app.view.FileInterface import FileInterface

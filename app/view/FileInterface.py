@@ -63,7 +63,7 @@ class CustomTableWidget(TableWidget):
             # 检查 Ctrl 键是否被按下
             if event.modifiers() & Qt.ControlModifier:
                 print(f"Ctrl + Double-click on Row {row}, Column {column}")
-                # 弹出确认窗口：打开所有选中的文件
+                # TODO 弹出确认窗口：打开所有选中的文件
             else:
                 print(f"Double-click on Row {row}, Column {column}")
                 # 你可以在这里添加更多的逻辑
@@ -84,6 +84,7 @@ class CustomTableWidget(TableWidget):
                 rows.append(row)
         return tuple(rows)
 
+    # TODO 反选功能
     # def counter_selection(self):
     #     """反选"""
     #     select_rows = self.get_select_rows()
@@ -103,13 +104,14 @@ class CustomTableWidget(TableWidget):
         remove_selected.triggered.connect(self.remove_selected)
         open_dir = Action(FluentIcon.FOLDER, self.tr('打开文件所在位置'))
         open_dir.triggered.connect(lambda: os.startfile(os.path.dirname(self.pathinfolib[row]["path"])))
+        open_file = Action(FluentIcon.PLAY, '打开文件（夹）')
         
         menu.addActions([
             remove,
             remove_all,
             remove_selected,
             open_dir,
-            Action(FluentIcon.PLAY, '打开文件（夹）')
+            
         ])
 
         menu.exec(event.globalPos())
@@ -124,7 +126,7 @@ class CustomTableWidget(TableWidget):
         return row
         
     def remove_all(self):
-        # 弹出确定窗口
+        # TODO 弹出确定窗口
         self.pathinfolib = []
         self.update()
         
