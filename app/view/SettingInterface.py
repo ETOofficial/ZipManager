@@ -35,8 +35,6 @@ class SettingInterface(ScrollArea):
             self.enableDebugCard
         ])
 
-        # self.expandLayout.setSpacing(28)
-        # self.expandLayout.setContentsMargins(60, 10, 60, 0)
         self.expandLayout.addWidget(self.developerGroup)
 
         self.initWidget()

@@ -3,7 +3,7 @@ import os
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
-    TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition
+    TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition, MessageBox
 
 from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
 
@@ -142,6 +142,14 @@ class CustomTableWidget(TableWidget):
         
     def remove_all(self):
         # TODO 弹出确定窗口
+        message_box = MessageBox(
+            self.tr("确定移出所有文件？"),
+            self.tr("文件列表将被清空"),
+            parent=self.parent()
+        )
+        message_box.setClosableOnMaskClicked(True)
+        if not message_box.exec():
+            return 
         InfoBar.success(
             self.tr("已将文件移出列表"),
             self.tr("所有"),
