@@ -1,9 +1,9 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
-    TransparentDropDownPushButton
+    TransparentDropDownPushButton, CommandButton
 
 from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
 
@@ -105,13 +105,14 @@ class CustomTableWidget(TableWidget):
         open_dir = Action(FluentIcon.FOLDER, self.tr('打开文件所在位置'))
         open_dir.triggered.connect(lambda: os.startfile(os.path.dirname(self.pathinfolib[row]["path"])))
         open_file = Action(FluentIcon.PLAY, '打开文件（夹）')
+        # TODO
         
         menu.addActions([
             remove,
             remove_all,
             remove_selected,
             open_dir,
-            
+            open_file
         ])
 
         menu.exec(event.globalPos())
@@ -139,6 +140,12 @@ class CustomTableWidget(TableWidget):
 
     def update(self):
         self.len_row = len(self.pathinfolib)
+        if self.len_row == 0:
+            self.parent().add_label.show()
+            self.hide()
+        else:
+            self.parent().add_label.hide()
+            self.show()
         self.setRowCount(self.len_row)
         list_info = dictList_to_listList(self.pathinfolib, self.columnKeys)
         for i in range(self.len_row):
@@ -159,17 +166,20 @@ class FileInterface(ScrollArea):
         self.commandBar = CommandBar(self)
         # change button style
         self.commandBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
+        
+        self.add_label = QLabel(self.tr('拖入以添加文件（夹）'))
+        self.add_label.setAlignment(Qt.AlignCenter)
 
         # 创建文件表格
         self.tableView = CustomTableWidget(self)
 
         # 添加按钮
-        self.addButton(FluentIcon.PLAY, self.tr('压缩全部'), )
-        self.addButton(FluentIcon.PLAY, self.tr('解压全部'), )
+        self.compress_all_button = self.addButton(FluentIcon.PLAY, self.tr('压缩全部'), )
+        self.unzip_all_button = self.addButton(FluentIcon.PLAY, self.tr('解压全部'), )
         self.commandBar.addSeparator()
-        self.addButton(FluentIcon.ADD, self.tr('添加文件'), self.select_file)
-        self.addButton(FluentIcon.ADD, self.tr('添加文件夹'), self.select_folder)
-        self.commandBar.addAction(Action(FluentIcon.CHECKBOX, self.tr('全选'), triggered=self.select_all, checkable=True))
+        self.add_file_button = self.addButton(FluentIcon.ADD, self.tr('添加文件'), self.select_file)
+        self.add_folder_button = self.addButton(FluentIcon.ADD, self.tr('添加文件夹'), self.select_folder)
+        self.select_all_button = self.commandBar.addAction(Action(FluentIcon.CHECKBOX, self.tr('全选'), triggered=self.select_all, checkable=True))
         # self.addButton(FluentIcon.CHECKBOX, "全选", self.select_all, True)
         # self.addButton(FluentIcon.CHECKBOX, "反选", self.tableView.counter_selection)
 
@@ -183,6 +193,13 @@ class FileInterface(ScrollArea):
         # 将元素加入布局
         self.vBoxLayout.addWidget(self.commandBar)
         self.vBoxLayout.addWidget(self.tableView)
+        self.vBoxLayout.addWidget(self.add_label)
+
+        if len(self.tableView.pathinfolib) == 0:
+            self.compress_all_button.setEnabled(False)
+            self.unzip_all_button.setEnabled(False)
+            self.tableView.hide()
+            self.add_label.show()
         
         print(f"{self.object_name} has been inited")
 
@@ -213,12 +230,12 @@ class FileInterface(ScrollArea):
         
         return button       
 
-    def addButton(self, icon, text, triggered=None):
+    def addButton(self, icon, text, triggered=None) -> CommandButton:
         if triggered is None:
             triggered = lambda: print(f"\"{text}\" has been clicked")
         action = Action(icon, text, self)
         action.triggered.connect(triggered)
-        self.commandBar.addAction(action)
+        return self.commandBar.addAction(action)
 
     
         
