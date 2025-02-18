@@ -66,18 +66,83 @@ class CustomTableWidget(TableWidget):
             # 检查 Ctrl 键是否被按下
             if event.modifiers() & Qt.ControlModifier:
                 print(f"Ctrl + Double-click on Row {row}, Column {column}")
-                # TODO 弹出确认窗口：打开所有选中的文件
+                msgbox = MessageBox(
+                    self.tr("打开所选文件？"),
+                    self.tr("无法验证文件是否安全，且可能会造成卡顿"),
+                    parent=self.parent()
+                )
+                msgbox.setClosableOnMaskClicked(True)
+                if msgbox.exec():
+                    self.open_selected()
             else:
                 print(f"Double-click on Row {row}, Column {column}")
-                # 你可以在这里添加更多的逻辑
                 print(f"Double-clicked path: {path}")
-                if os.path.isfile(path) or os.path.isdir(path):
-                    os.startfile(path)
-                else:
-                    print("Invalidpath")
+                self.openfile(path)
         super().mouseDoubleClickEvent(event)
 
-    def get_select_rows(self):
+    def open_selected(self, show_errors=True):
+        """
+        
+        :param show_errors: 是否展示错误
+        :return: 错误内容
+        """
+        selected_rows = self.get_selected_rows()
+        paths = [pathinfo["path"] for i, pathinfo in enumerate(self.pathinfolib) if i in selected_rows]
+        errors = []
+        for path in paths:
+            error = self.openfile(path, show_error=False)
+            if error:
+                errors.append({"path": path, "error": error})
+        if show_errors and errors:
+            error_info = {}
+            for error in errors:
+                error_info[error["error"]] = error_info.get(error["error"], 0) + 1
+            error_content = ""
+            for error, count in error_info.items():
+                error_content += f"{error}: {count}个\n"
+            error_content = error_content[:-1]
+            InfoBar.error(
+                self.tr("文件打开失败"),
+                self.tr(f"{error_content}"),
+                parent=self.parent(),
+                duration=3000,
+                position=InfoBarPosition.BOTTOM_RIGHT
+            )
+        return errors
+
+    def openfile(self, path, show_error=True):
+        """
+        
+        :param path: 路径
+        :param show_error: 是否展示错误
+        :return: 错误内容
+        """
+        error = None
+        if os.path.isfile(path) or os.path.isdir(path):
+            try:
+                os.startfile(path)
+            except Exception as e:
+                error = f"{e}"
+                if show_error:
+                    InfoBar.error(
+                        self.tr("文件打开失败"),
+                        self.tr(f"{e}"),
+                        parent=self.parent(),
+                        duration=3000,
+                        position=InfoBarPosition.BOTTOM_RIGHT
+                    )
+        elif show_error:
+            error = "unfounded"
+            InfoBar.error(
+                self.tr("无效路径"),
+                self.tr("文件不存在"),
+                parent=self.parent(),
+                duration=3000,
+                position=InfoBarPosition.BOTTOM_RIGHT
+            )
+        return error
+
+    def get_selected_rows(self):
         rows = []
         selected_indexes = self.selectedIndexes()
         for index in selected_indexes:
@@ -144,13 +209,13 @@ class CustomTableWidget(TableWidget):
         return row
 
     def remove_all(self):
-        message_box = MessageBox(
+        msgbox = MessageBox(
             self.tr("确定移出所有文件？"),
             self.tr("文件列表将被清空"),
             parent=self.parent()
         )
-        message_box.setClosableOnMaskClicked(True)
-        if not message_box.exec():
+        msgbox.setClosableOnMaskClicked(True)
+        if not msgbox.exec():
             return
         InfoBar.success(
             self.tr("已将文件移出列表"),
@@ -163,7 +228,7 @@ class CustomTableWidget(TableWidget):
         self.__update()
 
     def remove_selected(self):
-        select_rows = self.get_select_rows()
+        select_rows = self.get_selected_rows()
         InfoBar.success(
             self.tr("已将文件移出列表"),
             self.tr(f"{len(select_rows)} 个文件"),
@@ -259,7 +324,7 @@ class FileInterface(ScrollArea):
             self.unzip_all_button.setEnabled(False)
             self.tableView.hide()
             self.add_label.show()
-            
+
         # self.tableView.update()
 
         print(f"{self.object_name} has been inited")
@@ -271,6 +336,7 @@ class FileInterface(ScrollArea):
             self.tableView.clearSelection()
 
     def createDropDownButton(self):
+        # FIXME 在窗口宽度不够时， CommandBar 自带的隐藏选项无法显示“其它选项”
         button = TransparentDropDownPushButton(self.tr('其它选项'), self, FluentIcon.MORE)
 
         remove_all = Action(FluentIcon.DELETE, self.tr('移出所有文件'))
