@@ -105,7 +105,7 @@ class CustomTableWidget(TableWidget):
         open_dir = Action(FluentIcon.FOLDER, self.tr('打开文件所在位置'))
         open_dir.triggered.connect(lambda: os.startfile(os.path.dirname(self.pathinfolib[row]["path"])))
         open_file = Action(FluentIcon.PLAY, '打开文件（夹）')
-        # TODO
+        # TODO 打开文件（夹）
         
         menu.addActions([
             remove,
@@ -118,10 +118,10 @@ class CustomTableWidget(TableWidget):
         menu.exec(event.globalPos())
         
     def remove_row(self, row):
-        InfoBar.info(
+        InfoBar.success(
             self.tr("已将文件移出列表"),
             self.tr(f"{self.pathinfolib[row]["path"]}"),
-            parent=self,
+            parent=self.parent(), # 不可是 self ，否则列表清空时则不会显示
             duration=3000,
             position=InfoBarPosition.BOTTOM_RIGHT
         )
@@ -130,15 +130,22 @@ class CustomTableWidget(TableWidget):
         
     def pop_row(self, row):
         row = self.pathinfolib.pop(row)
+        InfoBar.success(
+            self.tr("已将文件移出列表"),
+            self.tr(f"{row["path"]}"),
+            parent=self.parent(),
+            duration=3000,
+            position=InfoBarPosition.BOTTOM_RIGHT
+        )
         self.update()
         return row
         
     def remove_all(self):
         # TODO 弹出确定窗口
-        InfoBar.info(
+        InfoBar.success(
             self.tr("已将文件移出列表"),
             self.tr("所有"),
-            parent=self,
+            parent=self.parent(),
             duration=3000,
             position=InfoBarPosition.BOTTOM_RIGHT
         )
@@ -147,7 +154,7 @@ class CustomTableWidget(TableWidget):
         
     def remove_selected(self):
         select_rows = self.get_select_rows()
-        InfoBar.info(
+        InfoBar.success(
             self.tr("已将文件移出列表"),
             self.tr(f"{len(select_rows)} 个文件"),
             parent=self.parent(),
