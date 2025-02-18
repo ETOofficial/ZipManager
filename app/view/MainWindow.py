@@ -2,7 +2,7 @@ from PyQt5.QtGui import QIcon
 from PyQt5.QtWidgets import QApplication
 from qfluentwidgets import FluentIcon, FluentWindow, SplashScreen, NavigationItemPosition
 
-from app.common.config import ucfg
+from app.common.config import user_config as ucfg
 from app.common.debug import sleep
 from app.utils.fileOperator import remove_nested, getinfo
 from app.view.FileInterface import FileInterface
@@ -20,12 +20,12 @@ class MainWindow(FluentWindow):
         # create splash screen and show window
         self.splashScreen = SplashScreen(self.windowIcon(), self)
         self.show()
-            
+
         # 设置窗口位置及大小
         desktop = QApplication.desktop().availableGeometry()
         w, h = desktop.width(), desktop.height()
-        self.resize(int(w * ucfg["main_win_size_per"]["w"]), int(h * ucfg["main_win_size_per"]["h"]))
-        self.move(int(w * ucfg["main_win_pos_per"]["x"]), int(h * ucfg["main_win_pos_per"]["y"]))
+        self.resize(int(w * ucfg.load("main_win_size_per")["w"]), int(h * ucfg.load("main_win_size_per")["h"]))
+        self.move(int(w * ucfg.load("main_win_pos_per")["x"]), int(h * ucfg.load("main_win_pos_per")["y"]))
         del desktop, w, h
 
         # create sub interface
@@ -44,7 +44,7 @@ class MainWindow(FluentWindow):
         self.addSubInterface(self.taskInterface, FluentIcon.PLAY, self.tr('任务'))
         self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, self.tr('文件'))
         self.addSubInterface(self.settingInterface, FluentIcon.SETTING, self.tr('设置'), NavigationItemPosition.BOTTOM)
-        if ucfg["debug"]:
+        if ucfg.load("enable_debug"):
             sleep(self)
 
     def dragEnterEvent(self, evn):
@@ -62,7 +62,7 @@ class MainWindow(FluentWindow):
         paths = event.mimeData().text()
         paths = paths.split('\n')
         if paths[-1] == '':
-            del (paths[-1])
+            del paths[-1]
         for i in range(len(paths)):
             paths[i] = paths[i][8:]
         print(paths)
@@ -83,7 +83,7 @@ class MainWindow(FluentWindow):
         # 检查文件是否嵌套
         self.fileInterface.tableView.pathinfolib = remove_nested(self.fileInterface.tableView.pathinfolib)
 
-        self.fileInterface.tableView.update()
+        self.fileInterface.tableView.__update()
 
     def dragMoveEvent(self, event):
         """鼠标移动事件"""

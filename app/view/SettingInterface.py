@@ -1,14 +1,8 @@
-from PyQt5.QtCore import Qt, pyqtSignal
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QWidget
 from qfluentwidgets import ScrollArea, SettingCardGroup, ExpandLayout, SwitchSettingCard, FluentIcon, ConfigItem
 
-from ..common.config import ucfg, user_config
-
-
-def save_cfg(key, value):
-    ucfg[key] = value
-    user_config.save()
-    print("config saved")
+from ..common.config import user_config as ucfg
 
 
 class SettingInterface(ScrollArea):
@@ -18,7 +12,6 @@ class SettingInterface(ScrollArea):
         self.setObjectName(self.object_name)
 
         self.scrollWidget = QWidget()
-        # self.scrollWidget.setObjectName('scrollWidget')
         self.expandLayout = ExpandLayout(self.scrollWidget)
         
         self.developerGroup = SettingCardGroup(self.tr("开发人员选项"), self.scrollWidget)
@@ -26,11 +19,11 @@ class SettingInterface(ScrollArea):
             FluentIcon.CODE,
             self.tr("启用调试"),
             self.tr("启用调试功能"),
-            configItem=ConfigItem("developer", "enableDebug", ucfg["debug"]),
+            configItem=ConfigItem("developer", "enableDebug", ucfg.load("enable_debug")),
             parent=self.developerGroup
         )
         # self.enableDebugCharged = pyqtSignal(bool)
-        self.enableDebugCard.checkedChanged.connect(lambda:save_cfg("debug", self.enableDebugCard.isChecked()))
+        self.enableDebugCard.checkedChanged.connect(lambda:ucfg.set("enable_debug", self.enableDebugCard.isChecked()))
         self.developerGroup.addSettingCards([
             self.enableDebugCard
         ])
