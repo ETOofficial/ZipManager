@@ -3,7 +3,7 @@ import os
 from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
-    TransparentDropDownPushButton, CommandButton
+    TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition
 
 from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
 
@@ -118,6 +118,13 @@ class CustomTableWidget(TableWidget):
         menu.exec(event.globalPos())
         
     def remove_row(self, row):
+        InfoBar.info(
+            self.tr("已将文件移出列表"),
+            self.tr(f"{self.pathinfolib[row]["path"]}"),
+            parent=self,
+            duration=3000,
+            position=InfoBarPosition.BOTTOM_RIGHT
+        )
         del(self.pathinfolib[row])
         self.update()
         
@@ -128,13 +135,27 @@ class CustomTableWidget(TableWidget):
         
     def remove_all(self):
         # TODO 弹出确定窗口
+        InfoBar.info(
+            self.tr("已将文件移出列表"),
+            self.tr("所有"),
+            parent=self,
+            duration=3000,
+            position=InfoBarPosition.BOTTOM_RIGHT
+        )
         self.pathinfolib = []
         self.update()
         
     def remove_selected(self):
         select_rows = self.get_select_rows()
-        for i in select_rows:
-            self.pathinfolib.remove(self.pathinfolib[i])
+        InfoBar.info(
+            self.tr("已将文件移出列表"),
+            self.tr(f"{len(select_rows)} 个文件"),
+            parent=self.parent(),
+            duration=3000,
+            position=InfoBarPosition.BOTTOM_RIGHT
+        )
+        for i in select_rows[::-1]:
+            del(self.pathinfolib[i])
         self.clearSelection()
         self.update()
 
