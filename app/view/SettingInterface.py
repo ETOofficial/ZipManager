@@ -1,8 +1,15 @@
-from PyQt5.QtCore import Qt
+from PyQt5.QtCore import Qt, pyqtSignal
 from PyQt5.QtWidgets import QWidget
-from qfluentwidgets import ScrollArea, SettingCardGroup, ExpandLayout, SwitchSettingCard, FluentIcon
+from qfluentwidgets import ScrollArea, SettingCardGroup, ExpandLayout, SwitchSettingCard, FluentIcon, ConfigItem
 
-from ..common.config import ucfg
+from ..common.config import ucfg, user_config
+
+
+def save_cfg(key, value):
+    ucfg[key] = value
+    user_config.save()
+    print("config saved")
+
 
 class SettingInterface(ScrollArea):
     def __init__(self, parent=None):
@@ -19,9 +26,11 @@ class SettingInterface(ScrollArea):
             FluentIcon.CODE,
             self.tr("启用调试"),
             self.tr("启用调试功能"),
-            configItem=ucfg["debug"],
+            configItem=ConfigItem("developer", "enableDebug", ucfg["debug"]),
             parent=self.developerGroup
         )
+        # self.enableDebugCharged = pyqtSignal(bool)
+        self.enableDebugCard.checkedChanged.connect(lambda:save_cfg("debug", self.enableDebugCard.isChecked()))
         self.developerGroup.addSettingCards([
             self.enableDebugCard
         ])
@@ -38,3 +47,5 @@ class SettingInterface(ScrollArea):
         self.setViewportMargins(0, 120, 0, 20)
         self.setWidget(self.scrollWidget)
         self.setWidgetResizable(True)
+        
+    

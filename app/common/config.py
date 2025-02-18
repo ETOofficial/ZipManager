@@ -23,6 +23,11 @@ class UserConfig:
             
     def show(self, indent=4):
         print(json.dumps(self.config, indent=indent))
+        
+    def save(self):
+        # self.show()
+        with open(self.CONFIG_PATH, "w") as f:
+            json.dump(self.config, f, indent=4)
 
 user_config = UserConfig()
 ucfg = user_config.config
