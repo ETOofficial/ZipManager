@@ -2,13 +2,13 @@ import os
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor, QKeySequence
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel, QAction
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
     TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition, MessageBox
 
 from app.common.config import user_config as ucfg
 from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
-
+from app.utils.IZip import ISevenZipFile
 
 class CustomTableWidget(TableWidget):
     def __init__(self, parent=None):
@@ -169,6 +169,9 @@ class CustomTableWidget(TableWidget):
 
     def __contextMenu(self, event, row, column):
         menu = RoundMenu(parent=self)
+        menu_open = RoundMenu(self.tr("打开"))
+        menu_remove = RoundMenu(self.tr("移出"))
+        menu_remove.setIcon(FluentIcon.DELETE)
 
         remove = Action(FluentIcon.DELETE, self.tr('移出列表'))
         remove.triggered.connect(lambda: self.remove_row(row))
@@ -184,13 +187,18 @@ class CustomTableWidget(TableWidget):
         open_selected.triggered.connect(lambda: self.open_selected(True))
         # TODO 复制文件名、地址、完整路径
 
-        menu.addActions([
+        
+        
+        menu.addMenu(menu_remove)
+        menu.addMenu(menu_open)
+
+        menu_remove.addActions([
             remove,
             remove_selected,
             remove_all
         ])
-        menu.addSeparator()
-        menu.addActions([
+        
+        menu_open.addActions([
             open_dir,
             open_file,
             open_selected
