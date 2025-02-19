@@ -14,6 +14,8 @@ class SettingInterface(ScrollArea):
         self.scrollWidget = QWidget()
         self.expandLayout = ExpandLayout(self.scrollWidget)
         
+        # TODO 最小化到托盘， 自启动，语言，主题，默认文件夹
+        
         self.developerGroup = SettingCardGroup(self.tr("开发人员选项"), self.scrollWidget)
         self.enableDebugCard = SwitchSettingCard(
             FluentIcon.CODE,
@@ -30,9 +32,9 @@ class SettingInterface(ScrollArea):
 
         self.expandLayout.addWidget(self.developerGroup)
 
-        self.initWidget()
+        self.__initWidget()
 
-    def initWidget(self):
+    def __initWidget(self):
         self.resize(1000, 800)
         self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
         self.setViewportMargins(0, 120, 0, 20)

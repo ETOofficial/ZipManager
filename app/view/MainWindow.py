@@ -33,14 +33,14 @@ class MainWindow(FluentWindow):
         self.fileInterface = FileInterface(self)
         self.settingInterface = SettingInterface(self)
 
-        self.initNavigation()
+        self.__initNavigation()
 
         self.setAcceptDrops(True)
 
         # close splash screen
         self.splashScreen.finish()
 
-    def initNavigation(self):
+    def __initNavigation(self):
         self.addSubInterface(self.taskInterface, FluentIcon.PLAY, self.tr('任务'))
         self.addSubInterface(self.fileInterface, FluentIcon.FOLDER, self.tr('文件'))
         self.addSubInterface(self.settingInterface, FluentIcon.SETTING, self.tr('设置'), NavigationItemPosition.BOTTOM)
@@ -83,7 +83,7 @@ class MainWindow(FluentWindow):
         # 检查文件是否嵌套
         self.fileInterface.tableView.pathinfolib = remove_nested(self.fileInterface.tableView.pathinfolib)
 
-        self.fileInterface.tableView.__update()
+        self.fileInterface.tableView.update_table()
 
     def dragMoveEvent(self, event):
         """鼠标移动事件"""
