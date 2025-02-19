@@ -1,5 +1,5 @@
 global_vars = {
-    
+    "new_zipping_pathlib": []
 }
 
 def get_var(var_name):

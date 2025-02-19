@@ -83,7 +83,7 @@ class MainWindow(FluentWindow):
         # 检查文件是否嵌套
         self.fileInterface.tableView.pathinfolib = remove_nested(self.fileInterface.tableView.pathinfolib)
 
-        self.fileInterface.tableView.update_table()
+        self.fileInterface.update_interface()
 
     def dragMoveEvent(self, event):
         """鼠标移动事件"""

@@ -34,6 +34,8 @@ class UserConfig:
         self.config[key] = value
         if autosave:
             self.save()
+            
+    # TODO 检查配置文件是否完整
 
 user_config = UserConfig()
 # cfg = Config()
