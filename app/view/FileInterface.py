@@ -1,14 +1,14 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QBrush, QColor
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel
+from PyQt5.QtGui import QBrush, QColor, QKeySequence
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel, QAction
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
     TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition, MessageBox
 
 from app.common.config import user_config as ucfg
 from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
-
+from app.utils.IZip import ISevenZipFile
 
 class CustomTableWidget(TableWidget):
     def __init__(self, parent=None):
@@ -169,6 +169,9 @@ class CustomTableWidget(TableWidget):
 
     def __contextMenu(self, event, row, column):
         menu = RoundMenu(parent=self)
+        menu_open = RoundMenu(self.tr("打开"))
+        menu_remove = RoundMenu(self.tr("移出"))
+        menu_remove.setIcon(FluentIcon.DELETE)
 
         remove = Action(FluentIcon.DELETE, self.tr('移出列表'))
         remove.triggered.connect(lambda: self.remove_row(row))
@@ -179,17 +182,26 @@ class CustomTableWidget(TableWidget):
         open_dir = Action(FluentIcon.FOLDER, self.tr('打开文件所在位置'))
         open_dir.triggered.connect(lambda: os.startfile(os.path.dirname(self.pathinfolib[row]["path"])))
         open_file = Action(FluentIcon.PLAY, '打开文件（夹）')
-        open_file.triggered.connect(lambda :self.__openfile(self.pathinfolib[row]["path"]))
+        open_file.triggered.connect(lambda: self.__openfile(self.pathinfolib[row]["path"]))
         open_selected = Action(FluentIcon.PLAY, '打开选中文件（夹）')
         open_selected.triggered.connect(lambda: self.open_selected(True))
+        # TODO 复制文件名、地址、完整路径
 
-        menu.addActions([
+        
+        
+        menu.addMenu(menu_remove)
+        menu.addMenu(menu_open)
+
+        menu_remove.addActions([
             remove,
-            remove_all,
             remove_selected,
+            remove_all
+        ])
+        
+        menu_open.addActions([
             open_dir,
             open_file,
-            open_selected,
+            open_selected
         ])
 
         menu.exec(event.globalPos())
@@ -203,7 +215,7 @@ class CustomTableWidget(TableWidget):
             position=InfoBarPosition.BOTTOM_RIGHT
         )
         del self.pathinfolib[row]
-        self.update_table()
+        self.update_table(True)
 
     def pop_row(self, row):
         row = self.pathinfolib.pop(row)
@@ -214,7 +226,7 @@ class CustomTableWidget(TableWidget):
             duration=3000,
             position=InfoBarPosition.BOTTOM_RIGHT
         )
-        self.update_table()
+        self.update_table(True)
         return row
 
     def remove_all(self):
@@ -234,7 +246,7 @@ class CustomTableWidget(TableWidget):
             position=InfoBarPosition.BOTTOM_RIGHT
         )
         self.pathinfolib = []
-        self.update_table()
+        self.update_table(True)
 
     def remove_selected(self):
         select_rows = self.get_selected_rows()
@@ -248,25 +260,15 @@ class CustomTableWidget(TableWidget):
         for i in select_rows[::-1]:
             del (self.pathinfolib[i])
         self.clearSelection()
-        self.update_table()
+        self.update_table(True)
 
-    def update_table(self):
+    def update_table(self, update_parent=False):
         """
         
         :return: 不存在的文件数量
         """
         self.len_row = len(self.pathinfolib)
         unfounded_numb = 0
-        # if self.len_row == 0:
-        #     self.parent().add_label.show()
-        #     self.hide()
-        #     self.parent().compress_all_button_enable = False
-        #     self.parent().unzip_all_button_enable = False
-        # else:
-        #     self.parent().add_label.hide()
-        #     self.show()
-        #     self.parent().compress_all_button_enable = True
-        #     self.parent().unzip_all_button_enable = True
         self.setRowCount(self.len_row)
         list_info = dictList_to_listList(self.pathinfolib, self.columnKeys)
         for i in range(self.len_row):
@@ -291,10 +293,9 @@ class CustomTableWidget(TableWidget):
                 duration=-1,
                 position=InfoBarPosition.BOTTOM_RIGHT
             )
+        if update_parent:
+            self.parent().update_interface()
         return unfounded_numb
-    
-    # def __InfoBar(self, *kwargs):
-        
 
 
 class FileInterface(ScrollArea):
@@ -302,7 +303,7 @@ class FileInterface(ScrollArea):
         super().__init__(parent)
         self.object_name = "FileInterface"
         self.setObjectName(self.object_name)
-        
+
         self.enable_compress_all_button = True
         self.enable_unzip_all_button = True
 
@@ -326,7 +327,6 @@ class FileInterface(ScrollArea):
         self.add_folder_button = self.__addButton(FluentIcon.ADD, self.tr('添加文件夹'), self.__select_folder)
         self.select_all_button = self.commandBar.addAction(
             Action(FluentIcon.CHECKBOX, self.tr('全选'), triggered=self.__select_all, checkable=True))
-        # self.addButton(FluentIcon.CHECKBOX, "全选", self.select_all, True)
         # self.addButton(FluentIcon.CHECKBOX, "反选", self.tableView.counter_selection)
 
         # 创建下拉按钮
@@ -341,7 +341,7 @@ class FileInterface(ScrollArea):
 
         # 更新界面
         self.update_interface()
-        
+
     def update_interface(self):
         if len(self.tableView.pathinfolib) == 0:
             self.tableView.hide()
@@ -356,7 +356,7 @@ class FileInterface(ScrollArea):
 
         self.compress_all_button.setEnabled(self.enable_compress_all_button)
         self.unzip_all_button.setEnabled(self.enable_unzip_all_button)
-        
+
         self.tableView.update_table()
 
     def __select_all(self, isChecked):
