@@ -1,14 +1,15 @@
 import os
 
 from PyQt5.QtCore import Qt
-from PyQt5.QtGui import QBrush, QColor, QKeySequence
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel, QAction
+from PyQt5.QtGui import QBrush, QColor
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
     TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition, MessageBox
 
 from app.common.config import user_config as ucfg
-from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
 from app.utils.IZip import ISevenZipFile
+from app.utils.fileOperator import remove_nested, dictList_to_listList, getinfo
+
 
 class CustomTableWidget(TableWidget):
     def __init__(self, parent=None):
@@ -187,8 +188,6 @@ class CustomTableWidget(TableWidget):
         open_selected.triggered.connect(lambda: self.open_selected(True))
         # TODO 复制文件名、地址、完整路径
 
-        
-        
         menu.addMenu(menu_remove)
         menu.addMenu(menu_open)
 
@@ -197,7 +196,7 @@ class CustomTableWidget(TableWidget):
             remove_selected,
             remove_all
         ])
-        
+
         menu_open.addActions([
             open_dir,
             open_file,
@@ -297,6 +296,9 @@ class CustomTableWidget(TableWidget):
             self.parent().update_interface()
         return unfounded_numb
 
+    def get_paths(self):
+        return (pathinfo["path"] for pathinfo in self.pathinfolib)
+
 
 class FileInterface(ScrollArea):
     def __init__(self, parent=None):
@@ -306,6 +308,9 @@ class FileInterface(ScrollArea):
 
         self.enable_compress_all_button = True
         self.enable_unzip_all_button = True
+
+        # 创建压缩接口实例
+        self.SevenZipFile = ISevenZipFile()
 
         # 创建布局实例
         self.vBoxLayout = QVBoxLayout(self)
@@ -342,6 +347,28 @@ class FileInterface(ScrollArea):
         # 更新界面
         self.update_interface()
 
+    def __createDropDownButton(self):
+        # FIXME 在窗口宽度不够时， CommandBar 自带的隐藏选项无法显示“其它选项”
+        button = TransparentDropDownPushButton(self.tr('其它选项'), self, FluentIcon.MORE)
+
+        remove_all = Action(FluentIcon.DELETE, self.tr('移出所有文件'))
+        remove_all.triggered.connect(self.tableView.remove_all)
+        remove_selected = Action(FluentIcon.DELETE, self.tr('移出选中文件'))
+        remove_selected.triggered.connect(self.tableView.remove_selected)
+
+        menu = RoundMenu(parent=self)
+        menu.addActions([
+            Action(FluentIcon.PLAY, '单独压缩每个文件'),
+            Action(FluentIcon.PLAY, '压缩选中文件'),
+            Action(FluentIcon.PLAY, '单独压缩每个选中文件'),
+            Action(FluentIcon.PLAY, '解压选中文件'),
+            remove_all,
+            remove_selected
+        ])
+        button.setMenu(menu)
+
+        return button
+
     def update_interface(self):
         if len(self.tableView.pathinfolib) == 0:
             self.tableView.hide()
@@ -364,28 +391,6 @@ class FileInterface(ScrollArea):
             self.tableView.selectAll()
         else:
             self.tableView.clearSelection()
-
-    def __createDropDownButton(self):
-        # FIXME 在窗口宽度不够时， CommandBar 自带的隐藏选项无法显示“其它选项”
-        button = TransparentDropDownPushButton(self.tr('其它选项'), self, FluentIcon.MORE)
-
-        remove_all = Action(FluentIcon.DELETE, self.tr('移出所有文件'))
-        remove_all.triggered.connect(self.tableView.remove_all)
-        remove_selected = Action(FluentIcon.DELETE, self.tr('移出选中文件'))
-        remove_selected.triggered.connect(self.tableView.remove_selected)
-
-        menu = RoundMenu(parent=self)
-        menu.addActions([
-            Action(FluentIcon.PLAY, '单独压缩每个文件'),
-            Action(FluentIcon.PLAY, '压缩选中文件'),
-            Action(FluentIcon.PLAY, '单独压缩每个选中文件'),
-            Action(FluentIcon.PLAY, '解压选中文件'),
-            remove_all,
-            remove_selected
-        ])
-        button.setMenu(menu)
-
-        return button
 
     def __addButton(self, icon, text, triggered=None) -> CommandButton:
         if triggered is None:

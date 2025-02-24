@@ -14,9 +14,38 @@ class SettingInterface(ScrollArea):
         self.scrollWidget = QWidget()
         self.expandLayout = ExpandLayout(self.scrollWidget)
         
-        # TODO 最小化到托盘， 自启动，语言，主题，默认文件夹
         
+        self.__initSettingCardGroup()
+        self.__initWidget()
+
+    def __initWidget(self):
+        # self.resize(1000, 800)
+        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
+        self.setWidget(self.scrollWidget)
+        self.setWidgetResizable(True)
+        
+    def __initSettingCardGroup(self):
+        # TODO 最小化到托盘， 自启动，语言，主题，默认文件夹
+        def enableDevelopersettingsCardChanged():
+            ucfg.set("enable_developersettings", self.enableDevelopersettingsCard.isChecked())
+            if ucfg.load("enable_developersettings"):
+                self.developerGroup.show()
+            else:
+                self.developerGroup.hide()
+        
+        self.settingGroup = SettingCardGroup(self.tr("设置"), self.scrollWidget)
         self.developerGroup = SettingCardGroup(self.tr("开发人员选项"), self.scrollWidget)
+        
+        
+        self.enableDevelopersettingsCard = SwitchSettingCard(
+            FluentIcon.CODE,
+            self.tr("启用开发人员选项"),
+            self.tr("启用开发人员选项"),
+            configItem=ConfigItem("setting", "enableDevelopersettings", ucfg.load("enable_developersettings")),
+            parent=self.settingGroup
+        )
+        self.enableDevelopersettingsCard.checkedChanged.connect(enableDevelopersettingsCardChanged)
+        
         self.enableDebugCard = SwitchSettingCard(
             FluentIcon.CODE,
             self.tr("启用调试"),
@@ -24,21 +53,23 @@ class SettingInterface(ScrollArea):
             configItem=ConfigItem("developer", "enableDebug", ucfg.load("enable_debug")),
             parent=self.developerGroup
         )
-        # self.enableDebugCharged = pyqtSignal(bool)
         self.enableDebugCard.checkedChanged.connect(lambda:ucfg.set("enable_debug", self.enableDebugCard.isChecked()))
+        
+        
+        self.settingGroup.addSettingCards([
+            self.enableDevelopersettingsCard
+        ])
         self.developerGroup.addSettingCards([
             self.enableDebugCard
         ])
 
+
+        self.expandLayout.addWidget(self.settingGroup)
         self.expandLayout.addWidget(self.developerGroup)
 
-        self.__initWidget()
-
-    def __initWidget(self):
-        self.resize(1000, 800)
-        self.setHorizontalScrollBarPolicy(Qt.ScrollBarAlwaysOff)
-        self.setViewportMargins(0, 120, 0, 20)
-        self.setWidget(self.scrollWidget)
-        self.setWidgetResizable(True)
-        
+        if ucfg.load("enable_developersettings"):
+            self.developerGroup.show()
+        else:
+            self.developerGroup.hide()
+            
     
