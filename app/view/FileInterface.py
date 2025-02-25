@@ -2,9 +2,9 @@ import os
 
 from PyQt5.QtCore import Qt
 from PyQt5.QtGui import QBrush, QColor
-from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel
+from PyQt5.QtWidgets import QVBoxLayout, QTableWidgetItem, QFileDialog, QAbstractItemView, QLabel, QHBoxLayout
 from qfluentwidgets import ScrollArea, FluentIcon, CommandBar, Action, TableWidget, RoundMenu, \
-    TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition, MessageBox
+    TransparentDropDownPushButton, CommandButton, InfoBar, InfoBarPosition, MessageBox, PushButton
 
 from app.common.config import user_config as ucfg
 from app.utils.IZip import ISevenZipFile
@@ -318,8 +318,8 @@ class FileInterface(ScrollArea):
         # change button style
         self.commandBar.setToolButtonStyle(Qt.ToolButtonTextBesideIcon)
 
-        self.add_label = QLabel(self.tr('拖入以添加文件（夹）'))
-        self.add_label.setAlignment(Qt.AlignCenter)
+        self.label_addfile = QLabel(self.tr('拖入以添加文件（夹）'))
+        self.label_addfile.setAlignment(Qt.AlignCenter)
 
         # 创建文件表格
         self.tableView = CustomTableWidget(self)
@@ -342,7 +342,7 @@ class FileInterface(ScrollArea):
         # 将元素加入布局
         self.vBoxLayout.addWidget(self.commandBar)
         self.vBoxLayout.addWidget(self.tableView)
-        self.vBoxLayout.addWidget(self.add_label)
+        self.vBoxLayout.addWidget(self.label_addfile)
 
         # 更新界面
         self.update_interface()
@@ -355,10 +355,12 @@ class FileInterface(ScrollArea):
         remove_all.triggered.connect(self.tableView.remove_all)
         remove_selected = Action(FluentIcon.DELETE, self.tr('移出选中文件'))
         remove_selected.triggered.connect(self.tableView.remove_selected)
+        single_compress_all = Action(FluentIcon.PLAY, self.tr('单独压缩每个文件'))
+        single_compress_all.triggered.connect(self.__single_compress)
 
         menu = RoundMenu(parent=self)
         menu.addActions([
-            Action(FluentIcon.PLAY, '单独压缩每个文件'),
+            single_compress_all,
             Action(FluentIcon.PLAY, '压缩选中文件'),
             Action(FluentIcon.PLAY, '单独压缩每个选中文件'),
             Action(FluentIcon.PLAY, '解压选中文件'),
@@ -368,16 +370,39 @@ class FileInterface(ScrollArea):
         button.setMenu(menu)
 
         return button
+    
+    def __single_compress(self):
+        def returnback():
+            self.commandBar.show()
+            self.tableView.show()
+            self.label_addfile.show()
+
+            returnback_button.hide()
+            
+        self.commandBar.hide()
+        self.tableView.hide()
+        self.label_addfile.hide()
+        
+        layout = QHBoxLayout()
+        # self.layout = FlowLayout(self)
+        
+        returnback_button = PushButton(FluentIcon.LEFT_ARROW, self.tr("返回"))
+        returnback_button.clicked.connect(returnback)
+        
+        layout.addWidget(returnback_button)
+        self.vBoxLayout.addLayout(layout)
+        
+        
 
     def update_interface(self):
         if len(self.tableView.pathinfolib) == 0:
             self.tableView.hide()
-            self.add_label.show()
+            # self.label_addfile.show()
             self.enable_compress_all_button = False
             self.enable_unzip_all_button = False
         else:
             self.tableView.show()
-            self.add_label.hide()
+            # self.label_addfile.hide()
             self.enable_compress_all_button = True
             self.enable_unzip_all_button = True
 

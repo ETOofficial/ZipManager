@@ -33,7 +33,7 @@ class SettingInterface(ScrollArea):
             else:
                 self.developerGroup.hide()
         
-        self.settingGroup = SettingCardGroup(self.tr("设置"), self.scrollWidget)
+        self.settingGroup = SettingCardGroup(self.tr("高级设置"), self.scrollWidget)
         self.developerGroup = SettingCardGroup(self.tr("开发人员选项"), self.scrollWidget)
         
         

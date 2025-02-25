@@ -78,6 +78,8 @@ class MainWindow(FluentWindow):
                 "atime": file_info["atime"]
             })
         self.fileInterface.tableView.pathinfolib.extend(files_info)
+        
+        # 切换到文件界面
         self.stackedWidget.setCurrentWidget(self.fileInterface)
 
         # 检查文件是否嵌套

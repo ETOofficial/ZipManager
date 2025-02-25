@@ -28,6 +28,10 @@ def getatime(path):
 
 def getname(path):
     return os.path.basename(path)
+
+def getdirname(path):
+    return os.path.dirname(path)
+    
 def getinfo(path):
     return {
         'name': getname(path),
