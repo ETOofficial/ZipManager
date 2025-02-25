@@ -3,22 +3,13 @@ from typing import BinaryIO
 
 import py7zr
 
+from app.utils.fileOperator import getname
+
 
 class ISevenZipFile:
-    def SevenZipFile(
-            self,
-            file: BinaryIO | str | Path,
-            path: Path | str,
-            arcname: str | None,
-            mode: str = "r",
-            *,
-            filters: list[dict[str, int]] | None = None,
-            dereference: bool = False,
-            password: str | None = None,
-            header_encryption: bool = False,
-            blocksize: int | None = None,
-            mp: bool = False
-    ):
+    def compress(self, file: BinaryIO | str | Path, path: Path | str, arcname: str | None = None, mode: str = "w", *,
+                 filters: list[dict[str, int]] | None = None, dereference: bool = False, password: str | None = None,
+                 header_encryption: bool = False, blocksize: int | None = None, mp: bool = False):
         # 生成的压缩文件路径
         archive = py7zr.SevenZipFile(
             file,
@@ -33,27 +24,19 @@ class ISevenZipFile:
         archive.writeall(path, arcname)
         archive.close()
 
-    def compress_single(
-            self,
-            files: list[BinaryIO | str | Path],
-            path: Path | str,
-            arcname: str | None,
-            mode: str = "r",
-            *,
-            filters: list[dict[str, int]] | None = None,
-            dereference: bool = False,
-            password: str | None = None,
-            header_encryption: bool = False,
-            blocksize: int | None = None,
-            mp: bool = False
-    ):
+    def single_compress(self, file: BinaryIO | str | Path, paths: list[Path | str], arcname: str | None = None,
+                        mode: str = "w", *, filters: list[dict[str, int]] | None = None, dereference: bool = False,
+                        password: str | None = None, header_encryption: bool = False, blocksize: int | None = None,
+                        mp: bool = False):
         """每个文件单独压缩"""
-        for file in files:
-            self.SevenZipFile(
+        for path in paths:
+            file = path + ".7z"
+            arcname = getname(path) if arcname is None else arcname
+            self.compress(
                 file,
-                mode,
                 path,
                 arcname,
+                mode,
                 filters=filters,
                 dereference=dereference,
                 password=password,
